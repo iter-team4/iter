@@ -22,5 +22,3 @@ routes.get('/api/routes/circuit', async (req, res) => {
         route: osrmData.route // This is the GeoJSON data returned from OSRM
     });
 }
-
-
