@@ -1,0 +1,16 @@
+# Dependency directories
+node_modules/
+
+# Build and production outputs
+dist/
+build/
+.next/
+out/
+
+# Version control and environment files
+.git/
+.env*
+
+# Logs and system files
+*.log
+.DS_Store
