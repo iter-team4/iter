@@ -35,4 +35,4 @@ Thumbs.db
 *.sln
 *.sw?
 
-.serverless
+/backend/.serverless
