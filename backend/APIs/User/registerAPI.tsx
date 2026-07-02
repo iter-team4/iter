@@ -11,6 +11,7 @@ const router = express.Router();
 // This tells TypeScript exactly what data a User object should hold
 interface IUser extends mongoose.Document {
   name: string;
+  username: string;
   email: string;
   passwordHash: string;
   createdAt: Date;
@@ -20,6 +21,7 @@ interface IUser extends mongoose.Document {
 // This tells MongoDB how to structure the data in the database
 const userSchema = new mongoose.Schema<IUser>({
   name: { type: String, required: true },
+  username: { type: String, required: true, unique: true },
   email: { type: String, required: true, unique: true, lowercase: true },
   passwordHash: { type: String, required: true },
   createdAt: { type: Date, default: Date.now }
@@ -31,19 +33,19 @@ const User = (mongoose.models.User as mongoose.Model<IUser>) || mongoose.model<I
 // ==========================================
 // Insert User Registration API here
 // ==========================================
-router.post('/api/users/register', async (req: Request, res: Response) => {
+router.post('/APIs/User/registerAPI', async (req: Request, res: Response) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, username, email, password } = req.body;
 
     // 1. Basic validation
-    if (!name || !email || !password) {
-      return res.status(400).json({ error: "Please provide name, email, and password." });
+    if (!name || !username || !email || !password) {
+      return res.status(400).json({ error: "Please provide all required fields." });
     }
 
     // 2. Check if user already exists in MongoDB
-    const existingUser = await User.findOne({ email });
+    const existingUser = await User.findOne({ $or: [{ email }, { username }] });
     if (existingUser) {
-      return res.status(400).json({ error: "An account with this email already exists." });
+      return res.status(400).json({ error: "An account with this email or username already exists." });
     }
 
     // 3. Hash the password for security (Salt rounds = 10)
@@ -53,6 +55,7 @@ router.post('/api/users/register', async (req: Request, res: Response) => {
     // 4. Save the new user to the database
     const newUser = new User({
       name,
+      username,
       email,
       passwordHash: hashedPassword // Notice we DO NOT save the raw password!
     });
@@ -65,6 +68,7 @@ router.post('/api/users/register', async (req: Request, res: Response) => {
       user: {
         id: savedUser._id,
         name: savedUser.name,
+        username: savedUser.username,
         email: savedUser.email
       }
     });
@@ -74,3 +78,5 @@ router.post('/api/users/register', async (req: Request, res: Response) => {
     res.status(500).json({ error: "Server error during registration." });
   }
 });
+
+export default router;
