@@ -3,6 +3,8 @@ import {
   SignUpCommand,
   ConfirmSignUpCommand,
   InitiateAuthCommand,
+  ForgotPasswordCommand,
+  ConfirmForgotPasswordCommand,
 } from "@aws-sdk/client-cognito-identity-provider";
 
 import { cognito } from "../utils/cognito.js";
@@ -122,6 +124,72 @@ export const login = async (req: Request, res: Response) => {
 
     return res.status(401).json({
       message: "Invalid credentials or user not confirmed",
+    });
+  }
+};
+
+export const forgotPassword = async (
+  req: Request,
+  res: Response
+) => {
+  const { email } = req.body;
+
+  if (!email) {
+    return res.status(400).json({
+      message: "Email is required",
+    });
+  }
+
+  try {
+    await cognito.send(
+      new ForgotPasswordCommand({
+        ClientId: process.env.COGNITO_CLIENT_ID!,
+        Username: email,
+      })
+    );
+
+    return res.status(200).json({
+      message: "Reset code sent to your email.",
+    });
+  } catch (error) {
+    console.error(error);
+
+    return res.status(400).json({
+      message: "Unable to send reset code.",
+    });
+  }
+};
+
+export const resetPassword = async (
+  req: Request,
+  res: Response
+) => {
+  const { email, code, newPassword } = req.body;
+
+  if (!email || !code || !newPassword) {
+    return res.status(400).json({
+      message: "Missing fields",
+    });
+  }
+
+  try {
+    await cognito.send(
+      new ConfirmForgotPasswordCommand({
+        ClientId: process.env.COGNITO_CLIENT_ID!,
+        Username: email,
+        ConfirmationCode: code,
+        Password: newPassword,
+      })
+    );
+
+    return res.status(200).json({
+      message: "Password reset successfully.",
+    });
+  } catch (error) {
+    console.error(error);
+
+    return res.status(400).json({
+      message: "Invalid code or password.",
     });
   }
 };

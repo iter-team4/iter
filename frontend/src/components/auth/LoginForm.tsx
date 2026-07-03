@@ -21,7 +21,7 @@ export function LoginForm() {
   const { isDark } = useTheme();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-const navigate = useNavigate();
+  const navigate = useNavigate();
 
   const API_BASE = import.meta.env.VITE_API_URL;
 
@@ -117,6 +117,7 @@ const navigate = useNavigate();
           <div className="flex items-center justify-end">
             <button
               type="button"
+              onClick={() => navigate("/forgot-password")}
               className="text-sm hover:underline transition-colors"
               style={{ color: brandColors.accent }}
             >
