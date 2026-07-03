@@ -4,6 +4,7 @@ import { AuthLayout } from "./layouts/AuthLayout";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import { VerifyPage } from "./pages/VerifyPage";
+import { HomePage } from "./pages/HomePage";
 
 export default function App() {
   return (
@@ -14,7 +15,7 @@ export default function App() {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/verify" element={<VerifyPage />} />
-
+            <Route path="/home" element={<HomePage />} />
             <Route path="/" element={<Navigate to="/login" replace />} />
             <Route path="*" element={<Navigate to="/login" replace />} />
           </Route>

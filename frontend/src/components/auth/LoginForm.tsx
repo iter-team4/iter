@@ -15,11 +15,13 @@ import {
 } from "../ui/card";
 import { brandColors } from "../../constants/marketing";
 import { useTheme } from "../../hooks/use-theme";
+import { useNavigate } from "react-router";
 
 export function LoginForm() {
   const { isDark } = useTheme();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+const navigate = useNavigate();
 
   const API_BASE = import.meta.env.VITE_API_URL;
 
@@ -51,8 +53,7 @@ export function LoginForm() {
 
       console.log("Login success:", data);
 
-      // TODO: redirect to dashboard later
-      // navigate("/dashboard");
+      navigate("/home");
     } catch (err) {
       console.error(err);
       alert("Server error");
