@@ -12,9 +12,8 @@ export const getMe = async (req: Request, res: Response) => {
 
     let user = await User.findOne({ cognitoSub });
 
-    // 🧠 AUTO-CREATE PROFILE HERE
     if (!user) {
-      const user = await User.create({
+      user = await User.create({
         cognitoSub,
         email,
         name: "",

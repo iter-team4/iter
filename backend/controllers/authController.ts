@@ -15,33 +15,30 @@ import User from "../models/User.js";
 export const register = async (req: Request, res: Response) => {
   const { email, password, name, username } = req.body;
 
-  try {
-    await cognito.send(
-      new SignUpCommand({
-        ClientId: process.env.COGNITO_CLIENT_ID!,
-        Username: email,
-        Password: password,
-        UserAttributes: [
-          { Name: "email", Value: email },
-          { Name: "name", Value: name }, // 👈 add this
-          { Name: "preferred_username", Value: username }, // 👈 add this
-        ],
-      })
-    );
+  await cognito.send(new SignUpCommand({
+    ClientId: process.env.COGNITO_CLIENT_ID!,
+    Username: email,
+    Password: password,
+    UserAttributes: [
+      { Name: "email", Value: email }
+    ],
+  }));
 
-    res.status(201).json({
-      message: "Verification code sent.",
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(400).json({
-      message: "Registration failed.",
-    });
-  }
+  // store temp user in DB (optional but clean)
+  await User.create({
+    cognitoSub: "pending",
+    email,
+    name,
+    username,
+  });
+
+  return res.status(201).json({
+    message: "Verification code sent."
+  });
 };
 
 export const verifyEmail = async (req: Request, res: Response) => {
-  const { email, code, name, username } = req.body;
+  const { email, code } = req.body;
 
   try {
     await cognito.send(
@@ -52,23 +49,13 @@ export const verifyEmail = async (req: Request, res: Response) => {
       })
     );
 
-    // create MongoDB user AFTER verification
-    const existing = await User.findOne({ email });
-
-    if (!existing) {
-      await User.create({
-        cognitoSub: email, // temporary until login (or better: set after login)
-        email,
-        name,
-        username,
-      });
-    }
-
-    res.status(200).json({
+    return res.status(200).json({
       message: "Email verified successfully.",
     });
+
   } catch (error) {
-    res.status(400).json({
+    console.error(error);
+    return res.status(400).json({
       message: "Invalid or expired code.",
     });
   }
