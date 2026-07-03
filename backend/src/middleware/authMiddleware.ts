@@ -10,7 +10,7 @@ const verifier = CognitoJwtVerifier.create({
 export async function authMiddleware(
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) {
   try {
     const authHeader = req.headers.authorization;
@@ -23,25 +23,25 @@ export async function authMiddleware(
 
     const token = authHeader.split(" ")[1];
 
-if (!token) {
-  return res.status(401).json({
-    message: "Missing token",
-  });
-}
+    if (!token) {
+      return res.status(401).json({
+        message: "Missing token",
+      });
+    }
 
-const payload = await verifier.verify(token);
+    const payload = await verifier.verify(token);
 
-const user: Express.Request["user"] = {
-  sub: payload.sub,
-};
+    const user: Express.Request["user"] = {
+      sub: payload.sub,
+    };
 
-if (typeof payload.email === "string") {
-  user.email = payload.email;
-}
+    if (typeof payload.email === "string") {
+      user.email = payload.email;
+    }
 
-req.user = user;
+    req.user = user;
 
-next();
+    next();
   } catch (error) {
     console.error(error);
 
