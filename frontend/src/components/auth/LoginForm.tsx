@@ -1,10 +1,10 @@
-import { useState } from 'react';
-import { Link } from 'react-router';
-import { motion } from 'motion/react';
-import { ArrowRight, Lock, Mail } from 'lucide-react';
-import { Button } from '../ui/button';
-import { Input } from '../ui/input';
-import { Label } from '../ui/label';
+import { useState } from "react";
+import { Link } from "react-router";
+import { motion } from "motion/react";
+import { ArrowRight, Lock, Mail } from "lucide-react";
+import { Button } from "../ui/button";
+import { Input } from "../ui/input";
+import { Label } from "../ui/label";
 import {
   Card,
   CardContent,
@@ -12,59 +12,65 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from '../ui/card';
-import { brandColors } from '../../constants/marketing';
-import { useTheme } from '../../hooks/use-theme';
+} from "../ui/card";
+import { brandColors } from "../../constants/marketing";
+import { useTheme } from "../../hooks/use-theme";
 
 export function LoginForm() {
   const { isDark } = useTheme();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
   const API_BASE = import.meta.env.VITE_API_URL;
 
-const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
 
-  try {
-    const res = await fetch(`${API_BASE}/api/auth/login`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        email,
-        password,
-      }),
-    });
+    try {
+      const res = await fetch(`${API_BASE}/api/auth/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email,
+          password,
+        }),
+      });
 
-    const data = await res.json();
+      const data = await res.json();
 
-    if (!res.ok) {
-      alert(data.message || "Login failed");
-      return;
+      if (!res.ok) {
+        alert(data.message || "Login failed");
+        return;
+      }
+
+      // 🔥 STORE TOKEN (important)
+      localStorage.setItem("idToken", data.idToken);
+      localStorage.setItem("accessToken", data.accessToken);
+
+      console.log("Login success:", data);
+
+      // TODO: redirect to dashboard later
+      // navigate("/dashboard");
+    } catch (err) {
+      console.error(err);
+      alert("Server error");
     }
-
-    // 🔥 STORE TOKEN (important)
-    localStorage.setItem("idToken", data.idToken);
-    localStorage.setItem("accessToken", data.accessToken);
-
-    console.log("Login success:", data);
-
-    // TODO: redirect to dashboard later
-    // navigate("/dashboard");
-
-  } catch (err) {
-    console.error(err);
-    alert("Server error");
-  }
-};
+  };
 
   return (
     <Card className="shadow-none border-0 bg-transparent rounded-none">
       <CardHeader className="space-y-1 text-center">
-        <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} transition={{ duration: 0.3 }}>
-          <CardTitle className="text-3xl font-bold" style={{ color: brandColors.accent }}>
+        <motion.div
+          initial={{ scale: 0.95 }}
+          animate={{ scale: 1 }}
+          transition={{ duration: 0.3 }}
+        >
+          <CardTitle
+            className="text-3xl font-bold"
+            style={{ color: brandColors.accent }}
+          >
             Welcome Back
           </CardTitle>
           <CardDescription className="text-base mt-2">
@@ -135,7 +141,7 @@ const handleSubmit = async (e: React.FormEvent) => {
             <div className="relative flex justify-center text-xs uppercase">
               <span
                 className="px-2 text-muted-foreground transition-colors duration-500"
-                style={{ background: isDark ? '#36312a' : '#EDE7D9' }}
+                style={{ background: isDark ? "#36312a" : "#EDE7D9" }}
               >
                 Don&apos;t have an account?
               </span>
@@ -146,7 +152,10 @@ const handleSubmit = async (e: React.FormEvent) => {
             type="button"
             variant="outline"
             className="w-full border-2 transition-all duration-300"
-            style={{ borderColor: brandColors.accent, color: brandColors.accent }}
+            style={{
+              borderColor: brandColors.accent,
+              color: brandColors.accent,
+            }}
             asChild
           >
             <Link to="/register">Sign Up</Link>
