@@ -56,7 +56,13 @@ export function RegisterForm() {
         setError(data.error || "Registration failed.");
       } else {
         setSuccess("Check your email for verification code");
-        navigate("/verify", { state: { email } });
+        navigate("/verify", {
+          state: {
+            email,
+            name,
+            username,
+          },
+        });
       }
     } catch (err) {
       setError("Could not connect to the server. Is the backend running?");

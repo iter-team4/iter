@@ -10,6 +10,8 @@ export function VerifyPage() {
 
   // email passed from register page
   const email = location.state?.email || "";
+  const name = location.state?.name || "";
+  const username = location.state?.username || "";
 
   const [code, setCode] = useState("");
   const [error, setError] = useState("");
@@ -35,6 +37,8 @@ export function VerifyPage() {
         body: JSON.stringify({
           email,
           code,
+          name,
+          username,
         }),
       });
 
