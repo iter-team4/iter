@@ -6,6 +6,7 @@ import {
   Popup,
   Polyline,
   useMapEvents,
+  useMap,
 } from "react-leaflet";
 import { Plus, Route, CalendarDays } from "lucide-react";
 import { getWalkingRoute } from "../services/routing";
@@ -34,6 +35,20 @@ function PathDrawer({
       onAddPoint([e.latlng.lat, e.latlng.lng]);
     },
   });
+
+  return null;
+}
+
+function ZoomToRoute({ route }: { route: [number, number][] }) {
+  const map = useMap();
+
+  useEffect(() => {
+    if (route.length === 0) return;
+
+    map.fitBounds(route, {
+      padding: [40, 40],
+    });
+  }, [route, map]);
 
   return null;
 }
@@ -223,9 +238,16 @@ export function HomePage() {
             <PathDrawer
               onAddPoint={(point) => {
                 if (activePanel === "create") {
+                  // Hide any previously selected saved route
+                  setSelectedRoute([]);
+
                   setPathPoints((prev) => [...prev, point]);
                 }
               }}
+            />
+
+            <ZoomToRoute
+              route={selectedRoute.length > 0 ? selectedRoute : routeGeometry}
             />
 
             {routeGeometry.length > 0 && <Polyline positions={routeGeometry} />}
@@ -256,7 +278,12 @@ export function HomePage() {
           {/* Navigation */}
           <div className="space-y-3 p-5">
             <button
-              onClick={() => setActivePanel("create")}
+              onClick={() => {
+                setActivePanel("create");
+
+                // Hide the previously selected saved route
+                setSelectedRoute([]);
+              }}
               className={`flex w-full items-center gap-3 rounded-xl border p-4 transition ${
                 activePanel === "create"
                   ? "border-primary bg-accent text-accent-foreground"
@@ -280,7 +307,10 @@ export function HomePage() {
             </button>
 
             <button
-              onClick={() => setActivePanel("calendar")}
+              onClick={() => {
+                setActivePanel("calendar");
+                setSelectedRoute([]);
+              }}
               className={`flex w-full items-center gap-3 rounded-xl border p-4 transition ${
                 activePanel === "calendar"
                   ? "border-primary bg-accent text-accent-foreground"
@@ -375,14 +405,16 @@ export function HomePage() {
                 {savedRoutes.map((route) => (
                   <button
                     key={route._id}
-
                     onClick={() => {
                       const points = route.waypoints.map(
                         ([lng, lat]) => [lat, lng] as [number, number]
                       );
 
-                      setSelectedRoute(points);
+                      // Hide any route currently being created
+                      setRouteGeometry([]);
+                      setPathPoints([]);
 
+                      // Show the saved route
                       setSelectedRoute(points);
                     }}
 
