@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router";
 import { motion } from "motion/react";
-import { ArrowRight, Lock, Mail } from "lucide-react";
+import { ArrowRight, Lock, Mail, Eye, EyeOff } from "lucide-react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
@@ -21,6 +21,7 @@ export function LoginForm() {
   const { isDark } = useTheme();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
   const API_BASE = import.meta.env.VITE_API_URL;
@@ -61,8 +62,8 @@ export function LoginForm() {
   };
 
   return (
-    <Card className="shadow-none border-0 bg-transparent rounded-none">
-      <CardHeader className="space-y-1 text-center">
+    <Card className="shadow-none border-0 bg-transparent rounded-none w-full">
+      <CardHeader className="text-center pb-8 pt-2">
         <motion.div
           initial={{ scale: 0.95 }}
           animate={{ scale: 1 }}
@@ -81,7 +82,7 @@ export function LoginForm() {
       </CardHeader>
 
       <form onSubmit={handleSubmit}>
-        <CardContent className="space-y-4">
+        <CardContent className="flex flex-col gap-6 px-6">
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <div className="relative">
@@ -92,7 +93,7 @@ export function LoginForm() {
                 placeholder="you@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="pl-10"
+                className="pl-10 h-11"
                 required
               />
             </div>
@@ -104,13 +105,21 @@ export function LoginForm() {
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
               <Input
                 id="password"
-                type="password"
+                type={showPassword ? "text" : "password"}
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="pl-10"
+                className="pl-10 pr-10 h-11"
                 required
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword((v) => !v)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+              </button>
             </div>
           </div>
 
@@ -126,17 +135,17 @@ export function LoginForm() {
           </div>
         </CardContent>
 
-        <CardFooter className="flex flex-col space-y-4">
+        <CardFooter className="flex flex-col gap-4 px-6 pt-6 pb-4">
           <Button
             type="submit"
-            className="w-full text-sm font-semibold shadow-lg hover:shadow-xl transition-all duration-300 group"
+            className="w-full h-11 text-sm font-semibold shadow-lg hover:shadow-xl transition-all duration-300 group"
             style={{ background: brandColors.accent, color: brandColors.dark }}
           >
             Sign In
             <ArrowRight className="ml-2 size-4 group-hover:translate-x-1 transition-transform" />
           </Button>
 
-          <div className="relative">
+          <div className="relative w-full">
             <div className="absolute inset-0 flex items-center">
               <span className="w-full border-t border-border" />
             </div>
@@ -153,7 +162,7 @@ export function LoginForm() {
           <Button
             type="button"
             variant="outline"
-            className="w-full border-2 transition-all duration-300"
+            className="w-full h-11 border-2 transition-all duration-300"
             style={{
               borderColor: brandColors.accent,
               color: brandColors.accent,
