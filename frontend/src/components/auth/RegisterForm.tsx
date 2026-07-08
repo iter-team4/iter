@@ -1,7 +1,7 @@
 import { Link } from "react-router";
 import React, { useState } from "react";
 import { motion } from "motion/react";
-import { ArrowRight, Lock, Mail, User, AtSign } from "lucide-react";
+import { ArrowRight, Lock, Mail, User, AtSign, Eye, EyeOff } from "lucide-react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
@@ -17,7 +17,6 @@ import { brandColors } from "../../constants/marketing";
 import { useTheme } from "../../hooks/use-theme";
 import { useNavigate } from "react-router";
 
-//const app_name = 'https://main.d16rmfrw6xdafc.amplifyapp.com/'; // Change to offical later
 const API_BASE = import.meta.env.VITE_API_URL;
 console.log("API_BASE =", API_BASE);
 
@@ -31,15 +30,16 @@ export function RegisterForm() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setSuccess("");
-    //console.log('Register', { name, email, password, confirmPassword });
 
     if (password !== confirmPassword) {
-      setError("Passwords do no match");
+      setError("Passwords do not match");
       return;
     }
 
@@ -70,8 +70,8 @@ export function RegisterForm() {
   };
 
   return (
-    <Card className="shadow-none border-0 bg-transparent rounded-none">
-      <CardHeader className="space-y-1 text-center">
+    <Card className="shadow-none border-0 bg-transparent rounded-none w-full">
+      <CardHeader className="text-center pb-8 pt-2">
         <motion.div
           initial={{ scale: 0.95 }}
           animate={{ scale: 1 }}
@@ -90,8 +90,10 @@ export function RegisterForm() {
       </CardHeader>
 
       <form onSubmit={handleSubmit}>
-        <CardContent className="space-y-4">
-          {error && <p className="text-sm text-red-500 text-center">{error}</p>}
+        <CardContent className="flex flex-col gap-5 px-6">
+          {error && (
+            <p className="text-sm text-red-500 text-center">{error}</p>
+          )}
           {success && (
             <p className="text-sm text-green-500 text-center">{success}</p>
           )}
@@ -106,7 +108,7 @@ export function RegisterForm() {
                 placeholder="John Doe"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="pl-10"
+                className="pl-10 h-11"
                 required
               />
             </div>
@@ -122,7 +124,7 @@ export function RegisterForm() {
                 placeholder="johndoe123"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                className="pl-10"
+                className="pl-10 h-11"
                 required
               />
             </div>
@@ -138,7 +140,7 @@ export function RegisterForm() {
                 placeholder="you@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="pl-10"
+                className="pl-10 h-11"
                 required
               />
             </div>
@@ -150,13 +152,21 @@ export function RegisterForm() {
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
               <Input
                 id="password"
-                type="password"
+                type={showPassword ? "text" : "password"}
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="pl-10"
+                className="pl-10 pr-10 h-11"
                 required
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword((v) => !v)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+              </button>
             </div>
           </div>
 
@@ -166,28 +176,36 @@ export function RegisterForm() {
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
               <Input
                 id="confirmPassword"
-                type="password"
+                type={showConfirmPassword ? "text" : "password"}
                 placeholder="••••••••"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="pl-10"
+                className="pl-10 pr-10 h-11"
                 required
               />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword((v) => !v)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+              >
+                {showConfirmPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+              </button>
             </div>
           </div>
         </CardContent>
 
-        <CardFooter className="flex flex-col space-y-4">
+        <CardFooter className="flex flex-col gap-4 px-6 pt-6 pb-4">
           <Button
             type="submit"
-            className="w-full text-sm font-semibold shadow-lg hover:shadow-xl transition-all duration-300 group"
+            className="w-full h-11 text-sm font-semibold shadow-lg hover:shadow-xl transition-all duration-300 group"
             style={{ background: brandColors.accent, color: brandColors.dark }}
           >
             Create Account
             <ArrowRight className="ml-2 size-4 group-hover:translate-x-1 transition-transform" />
           </Button>
 
-          <div className="relative">
+          <div className="relative w-full">
             <div className="absolute inset-0 flex items-center">
               <span className="w-full border-t border-border" />
             </div>
@@ -204,7 +222,7 @@ export function RegisterForm() {
           <Button
             type="button"
             variant="outline"
-            className="w-full border-2 transition-all duration-300"
+            className="w-full h-11 border-2 transition-all duration-300"
             style={{
               borderColor: brandColors.accent,
               color: brandColors.accent,
