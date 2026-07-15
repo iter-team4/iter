@@ -376,12 +376,40 @@ export function HomePage() {
                   <span className="ml-2 font-bold">{pathPoints.length}</span>
                 </div>
 
-                <input
-                  value={routeName}
-                  onChange={(e) => setRouteName(e.target.value)}
-                  placeholder="Morning Run"
-                  className="w-full rounded-xl border border-input bg-input px-4 py-3"
-                />
+                <div className="space-y-2">
+  <label
+    htmlFor="routeName"
+    className="text-sm font-medium text-muted-foreground"
+  >
+    Route Name
+  </label>
+
+  <input
+    id="routeName"
+    value={routeName}
+    onChange={(e) => setRouteName(e.target.value)}
+    placeholder="Morning Run"
+    className="
+      w-full
+      rounded-xl
+      border
+      border-border
+      bg-background
+      px-4
+      py-3
+      transition
+      placeholder:text-muted-foreground
+      focus:border-green-500
+      focus:outline-none
+      focus:ring-2
+      focus:ring-green-500/20
+    "
+  />
+
+  <p className="text-xs text-muted-foreground">
+    Give your route a memorable name.
+  </p>
+</div>
 
                 <button
                   onClick={() => {
