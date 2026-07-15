@@ -1,5 +1,5 @@
 const OSRM_URL =
-  "https://router.project-osrm.org/route/v1/walking";
+  "https://routing.openstreetmap.de/routed-foot/route/v1/driving";
 
 export async function getWalkingRoute(
   points: [number, number][]
