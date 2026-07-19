@@ -562,23 +562,23 @@ export function HomePage() {
                       <p className="text-sm text-muted-foreground">Activity history</p>
                     </div>
 
-                    {myRuns.length === 0 ? (
+                    <Calendar
+                      mode="single"
+                      selected={selectedDate}
+                      onSelect={setSelectedDate}
+                      modifiers={{
+                        hasRun: (date) => Boolean(runsByDay[dateKey(date)]),
+                      }}
+                      modifiersClassNames={{
+                        hasRun: "border border-green-500 bg-green-500/20 text-green-400",
+                      }}
+                      className="rounded-xl border border-border bg-muted/20"
+                    />
+
+                    {myRuns.length === 0 && (
                       <div className="rounded-xl border border-dashed border-border p-4 text-sm text-muted-foreground">
                         No runs yet. Complete a run in the iter mobile app and it'll show up here.
                       </div>
-                    ) : (
-                      <Calendar
-                        mode="single"
-                        selected={selectedDate}
-                        onSelect={setSelectedDate}
-                        modifiers={{
-                          hasRun: (date) => Boolean(runsByDay[dateKey(date)]),
-                        }}
-                        modifiersClassNames={{
-                          hasRun: "border border-green-500 bg-green-500/20 text-green-400",
-                        }}
-                        className="rounded-xl border border-border bg-muted/20"
-                      />
                     )}
 
                     {selectedDate && (
