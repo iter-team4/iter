@@ -618,23 +618,41 @@ export function HomePage() {
 
                 {/* ── PROFILE ── */}
                 {activePanel === "profile" && (
-                  <div className="space-y-6">
+                  <div className="space-y-5">
 
                     {/* Avatar + identity */}
-                    <div className="flex flex-col items-center gap-3 pt-2">
+                    <div className="flex flex-col items-center gap-3 pt-4">
                       <div
-                        className="flex h-16 w-16 items-center justify-center rounded-full text-2xl font-bold text-white"
-                        style={{ backgroundColor: "#3C2A1E" }}
+                        className="flex h-20 w-20 items-center justify-center rounded-full text-3xl font-semibold"
+                        style={{
+                          background: "var(--muted)",
+                          border: "3px solid #C4A35A",
+                          color: "#C4A35A",
+                        }}
                       >
                         {username.charAt(0).toUpperCase()}
                       </div>
                       <div className="text-center">
-                        <p className="text-lg font-semibold">{username}</p>
+                        <p className="text-xl font-bold">{username}</p>
                         {memberSince && (
                           <p className="text-sm text-muted-foreground">Member since {memberSince}</p>
                         )}
                       </div>
+                      {/* Iter Runner badge — flat, same muted bg as avatar */}
+                      <div
+                        className="flex items-center gap-1.5 rounded-lg px-4 py-1.5 text-sm font-semibold"
+                        style={{
+                          background: "var(--muted)",
+                          color: "#C4A35A",
+                          border: "1px solid #C4A35A40",
+                        }}
+                      >
+                        ⚡ Iter Runner
+                      </div>
                     </div>
+
+                    {/* Divider */}
+                    <div className="border-t border-border" />
 
                     {/* All-time stats */}
                     <div>
@@ -642,23 +660,26 @@ export function HomePage() {
                         All-time stats
                       </p>
                       <div className="grid grid-cols-3 gap-2">
-                        <div className="flex flex-col items-center rounded-xl border border-border bg-muted/20 p-3">
-                          <span className="text-xl font-bold">
-                            {savedRoutes.reduce((sum, r) => sum + r.distanceMiles, 0).toFixed(1)}
+                        <div className="flex flex-col items-center gap-1 rounded-2xl border border-border bg-muted/20 px-2 py-3">
+                          <span className="text-center text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Total Miles</span>
+                          <span className="text-xl font-bold leading-tight">
+                            {myRuns.reduce((sum, r) => sum + r.distanceMiles, 0).toFixed(1)}
                           </span>
-                          <span className="mt-1 text-center text-[11px] leading-tight text-muted-foreground">Total miles</span>
+                          <span className="text-[11px] text-muted-foreground">mi</span>
                         </div>
-                        <div className="flex flex-col items-center rounded-xl border border-border bg-muted/20 p-3">
-                          <span className="text-xl font-bold">{savedRoutes.length}</span>
-                          <span className="mt-1 text-center text-[11px] leading-tight text-muted-foreground">Total runs</span>
+                        <div className="flex flex-col items-center gap-1 rounded-2xl border border-border bg-muted/20 px-2 py-3">
+                          <span className="text-center text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Total Runs</span>
+                          <span className="text-xl font-bold leading-tight">{myRuns.length}</span>
+                          <span className="text-[11px] text-muted-foreground">runs</span>
                         </div>
-                        <div className="flex flex-col items-center rounded-xl border border-border bg-muted/20 p-3">
-                          <span className="text-xl font-bold">
-                            {savedRoutes.length > 0
-                              ? Math.max(...savedRoutes.map((r) => r.distanceMiles)).toFixed(1)
-                              : "—"}
+                        <div className="flex flex-col items-center gap-1 rounded-2xl border border-border bg-muted/20 px-2 py-3">
+                          <span className="text-center text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Longest</span>
+                          <span className="text-xl font-bold leading-tight">
+                            {myRuns.length > 0
+                              ? Math.max(...myRuns.map((r) => r.distanceMiles)).toFixed(1)
+                              : "0.0"}
                           </span>
-                          <span className="mt-1 text-center text-[11px] leading-tight text-muted-foreground">Longest run</span>
+                          <span className="text-[11px] text-muted-foreground">mi</span>
                         </div>
                       </div>
                     </div>
