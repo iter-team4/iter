@@ -29,7 +29,10 @@
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^26.1.0",
     "prettier": "^3.9.4",
-    "serverless": "^4.38.1",
+    "serverless": "^3.40.0",
+    "serverless-dotenv-plugin": "^6.0.0",
+    "serverless-esbuild": "^1.57.2",
+    "serverless-plugin-include-dependencies": "^6.1.1",
     "tsx": "^4.22.4",
     "typescript": "^6.0.3"
   }

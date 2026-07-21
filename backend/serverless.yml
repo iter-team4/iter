@@ -1,28 +1,30 @@
 service: run-app-api
 
-package:
-  patterns:
-    - dist/**
-
 provider:
   name: aws
-  runtime: nodejs22.x
+  runtime: nodejs20.x
   region: us-east-1
 
-  environment:
-    MONGO_URI: ${env:MONGO_URI}
-    JWT_SECRET: ${env:JWT_SECRET}
-    COGNITO_REGION: us-east-2
-    COGNITO_CLIENT_ID: ${env:COGNITO_CLIENT_ID}
-    COGNITO_USER_POOL_ID: ${env:COGNITO_USER_POOL_ID}
+plugins:
+  - serverless-dotenv-plugin
+  - serverless-esbuild
+
+custom:
+  esbuild:
+    bundle: true
+    minify: true
+    sourcemap: false
+    platform: node
+    target: node20
 
 functions:
   api:
-    handler: dist/lambda.handler
-    timeout: 30
-    memorySize: 512
-
+    handler: src/lambda.handler
     events:
       - httpApi:
           path: /{proxy+}
           method: ANY
+
+package:
+  patterns:
+    - "!node_modules/**"
