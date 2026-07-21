@@ -12,6 +12,7 @@ import {
 import { Plus, Route, CalendarDays, Moon, Sun, User, ChevronLeft, LogOut } from "lucide-react";
 import { getWalkingRoute } from "../services/routing";
 import { useTheme } from "../hooks/use-theme";
+import { useAuthGuard } from "../hooks/use-auth-guard";
 import { Calendar } from "../components/ui/calendar";
 
 // ---- Leaflet setup (moved here so it only loads on /home) ----
@@ -129,11 +130,19 @@ export function HomePage() {
   const [routeName, setRouteName] = useState("");
 
   const [savedRoutes, setSavedRoutes] = useState<SavedRoute[]>([]);
+  const [routesLoading, setRoutesLoading] = useState(true);
+  const [runsLoading, setRunsLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<SavedRoute[]>([]);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [hasSearched, setHasSearched] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   const [selectedSavedRoute, setSelectedSavedRoute] =
     useState<SavedRoute | null>(null);
 
   const { isDark, toggleTheme } = useTheme();
+  useAuthGuard();
 
   const DEFAULT_LOCATION: [number, number] = [28.6024, -81.2001];
 
@@ -158,6 +167,7 @@ export function HomePage() {
    * Load saved routes from backend
    */
   const loadRoutes = async () => {
+    setRoutesLoading(true);
     try {
       const token = localStorage.getItem("idToken");
 
@@ -172,9 +182,12 @@ export function HomePage() {
 
       const data = await response.json();
 
-      setSavedRoutes(data);
+      setSavedRoutes(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error("Failed loading routes:", error);
+      setSavedRoutes([]);
+    } finally {
+      setRoutesLoading(false);
     }
   };
 
@@ -198,6 +211,25 @@ export function HomePage() {
     loadRoutes();
   }, []);
 
+  const searchRoutes = async (q: string) => {
+    setSearchLoading(true);
+    setHasSearched(true);
+    try {
+      const token = localStorage.getItem("idToken");
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/routes/search?q=${encodeURIComponent(q)}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      const data = await res.json();
+      setSearchResults(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error("Search failed:", err);
+      setSearchResults([]);
+    } finally {
+      setSearchLoading(false);
+    }
+  };
+
   /*
    * Load the logged-in user's completed runs (read-only, logged via the mobile app)
    */
@@ -205,6 +237,7 @@ export function HomePage() {
     const token = localStorage.getItem("idToken");
     if (!token) return;
 
+    setRunsLoading(true);
     try {
       const response = await fetch(
         `${import.meta.env.VITE_API_URL}/api/runs/my-runs`,
@@ -217,9 +250,12 @@ export function HomePage() {
 
       const data = await response.json();
 
-      setMyRuns(data);
+      setMyRuns(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error("Failed loading runs:", error);
+      setMyRuns([]);
+    } finally {
+      setRunsLoading(false);
     }
   };
 
@@ -447,6 +483,7 @@ export function HomePage() {
                   onClick={() => setActivePanel(null)}
                   className="rounded-lg p-1.5 transition hover:bg-muted"
                   aria-label="Close panel"
+                  type="button"
                 >
                   <ChevronLeft size={18} />
                 </button>
@@ -461,6 +498,7 @@ export function HomePage() {
                     <div className="flex rounded-xl border border-border bg-muted/30 p-1">
                       <button
                         onClick={() => setPathsTab("create")}
+                        aria-label="Create path tab"
                         className={`flex flex-1 items-center justify-center gap-2 rounded-lg py-2 text-sm font-medium transition ${
                           pathsTab === "create" ? "bg-card shadow-sm" : "text-muted-foreground hover:text-foreground"
                         }`}
@@ -469,6 +507,7 @@ export function HomePage() {
                       </button>
                       <button
                         onClick={() => setPathsTab("saved")}
+                        aria-label="Saved paths tab"
                         className={`flex flex-1 items-center justify-center gap-2 rounded-lg py-2 text-sm font-medium transition ${
                           pathsTab === "saved" ? "bg-card shadow-sm" : "text-muted-foreground hover:text-foreground"
                         }`}
@@ -500,6 +539,7 @@ export function HomePage() {
                         </div>
                         <button
                           onClick={() => saveRoute({ geometry: routeGeometry, distanceMiles: distance })}
+                          aria-label="Save path"
                           className="w-full rounded-xl bg-green-500 px-4 py-3 font-semibold text-black hover:opacity-90"
                         >
                           Save Path
@@ -507,12 +547,14 @@ export function HomePage() {
                         <button
                           onClick={() => setPathPoints((prev) => prev.slice(0, -1))}
                           disabled={pathPoints.length === 0}
+                          aria-label="Undo last point"
                           className="w-full rounded-xl border border-border px-4 py-3 font-semibold hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
                         >
                           Undo Last Point
                         </button>
                         <button
                           onClick={() => setPathPoints([])}
+                          aria-label="Clear path"
                           className="w-full rounded-xl border border-border px-4 py-3 hover:bg-muted"
                         >
                           Clear Path
@@ -522,32 +564,155 @@ export function HomePage() {
 
                     {pathsTab === "saved" && (
                       <div className="space-y-4">
-                        {savedRoutes.length === 0 && (
-                          <div className="rounded-xl border border-dashed border-border p-4 text-sm text-muted-foreground">
-                            No saved routes yet.
+                        {/* Search bar */}
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            value={searchQuery}
+                            onChange={(e) => {
+                              setSearchQuery(e.target.value);
+                              if (e.target.value === "") {
+                                setHasSearched(false);
+                                setSearchResults([]);
+                              }
+                            }}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter" && searchQuery.trim()) {
+                                searchRoutes(searchQuery.trim());
+                              }
+                            }}
+                            placeholder="Search routes…"
+                            className="flex-1 rounded-xl border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500/20"
+                          />
+                          <button
+                            onClick={() => {
+                              if (searchQuery.trim()) {
+                                searchRoutes(searchQuery.trim());
+                              } else {
+                                setHasSearched(false);
+                                setSearchResults([]);
+                              }
+                            }}
+                            className="rounded-xl bg-green-500 px-3 py-2 text-sm font-semibold text-black hover:opacity-90"
+                          >
+                            Search
+                          </button>
+                        </div>
+
+                        <p className="text-[11px] text-muted-foreground">
+                          Searches round trip to server
+                        </p>
+
+                        {/* Results */}
+                        {hasSearched ? (
+                          // Search results
+                          <div className="space-y-3">
+                            {searchLoading ? (
+                              <>
+                                {[1, 2].map((i) => (
+                                  <div key={i} className="w-full rounded-xl border border-border bg-muted/20 p-4 space-y-2 animate-pulse">
+                                    <div className="h-4 w-2/3 rounded bg-muted" />
+                                    <div className="h-3 w-1/3 rounded bg-muted" />
+                                  </div>
+                                ))}
+                              </>
+                            ) : searchResults.length === 0 ? (
+                              <div className="rounded-xl border border-dashed border-border p-4 text-sm text-muted-foreground">
+                                No routes found for "{searchQuery}".
+                              </div>
+                            ) : (
+                              <>
+                                <p className="text-[11px] text-muted-foreground">
+                                  {searchResults.length} result{searchResults.length !== 1 ? "s" : ""} for "{searchQuery}"
+                                </p>
+                                {searchResults.map((route) => (
+                                  <button
+                                    key={route._id}
+                                    onClick={() => {
+                                      const points = route.waypoints.map(([lng, lat]) => [lat, lng] as [number, number]);
+                                      setSelectedSavedRoute(route);
+                                      setSelectedRoute(points);
+                                    }}
+                                    aria-label={`View route ${route.routeName}`}
+                                    className="w-full rounded-xl border border-border bg-muted/20 p-4 text-left transition hover:bg-accent"
+                                  >
+                                    <h4 className="font-semibold">{route.routeName}</h4>
+                                    <p className="text-sm text-muted-foreground">{route.distanceMiles.toFixed(2)} miles</p>
+                                  </button>
+                                ))}
+                              </>
+                            )}
+                          </div>
+                        ) : (
+                          // Default: all saved routes
+                          <div className="space-y-3">
+                            {routesLoading ? (
+                              <>
+                                {[1, 2, 3].map((i) => (
+                                  <div key={i} className="w-full rounded-xl border border-border bg-muted/20 p-4 space-y-2 animate-pulse">
+                                    <div className="h-4 w-2/3 rounded bg-muted" />
+                                    <div className="h-3 w-1/3 rounded bg-muted" />
+                                  </div>
+                                ))}
+                              </>
+                            ) : savedRoutes.length === 0 ? (
+                              <div className="rounded-xl border border-dashed border-border p-4 text-sm text-muted-foreground">
+                                No saved routes yet.
+                              </div>
+                            ) : (
+                              savedRoutes.map((route) => (
+                                <button
+                                  key={route._id}
+                                  onClick={() => {
+                                    const points = route.waypoints.map(([lng, lat]) => [lat, lng] as [number, number]);
+                                    setSelectedSavedRoute(route);
+                                    setSelectedRoute(points);
+                                  }}
+                                  aria-label={`View route ${route.routeName}`}
+                                  className="w-full rounded-xl border border-border bg-muted/20 p-4 text-left transition hover:bg-accent"
+                                >
+                                  <h4 className="font-semibold">{route.routeName}</h4>
+                                  <p className="text-sm text-muted-foreground">{route.distanceMiles.toFixed(2)} miles</p>
+                                </button>
+                              ))
+                            )}
                           </div>
                         )}
-                        {savedRoutes.map((route) => (
-                          <button
-                            key={route._id}
-                            onClick={() => {
-                              const points = route.waypoints.map(([lng, lat]) => [lat, lng] as [number, number]);
-                              setSelectedSavedRoute(route);
-                              setSelectedRoute(points);
-                            }}
-                            className="w-full rounded-xl border border-border bg-muted/20 p-4 text-left transition hover:bg-accent"
-                          >
-                            <h4 className="font-semibold">{route.routeName}</h4>
-                            <p className="text-sm text-muted-foreground">{route.distanceMiles.toFixed(2)} miles</p>
-                          </button>
-                        ))}
+
                         {selectedSavedRoute && (
-                          <button
-                            onClick={deleteRoute}
-                            className="w-full rounded-xl bg-red-500 px-4 py-3 font-semibold text-white hover:bg-red-600"
-                          >
-                            Delete Path
-                          </button>
+                          <div className="space-y-2">
+                            {!confirmDelete ? (
+                              <button
+                                onClick={() => setConfirmDelete(true)}
+                                aria-label={`Delete route ${selectedSavedRoute.routeName}`}
+                                className="w-full rounded-xl border border-red-500/40 px-4 py-3 text-sm font-semibold text-red-500 transition hover:bg-red-500/10"
+                              >
+                                Delete Path
+                              </button>
+                            ) : (
+                              <div className="space-y-2 rounded-xl border border-red-500/40 bg-red-500/10 p-3">
+                                <p className="text-center text-xs font-medium text-red-500">
+                                  Delete "{selectedSavedRoute.routeName}"?
+                                </p>
+                                <div className="flex gap-2">
+                                  <button
+                                    onClick={() => setConfirmDelete(false)}
+                                    aria-label="Cancel delete"
+                                    className="flex-1 rounded-lg border border-border px-3 py-2 text-xs font-semibold hover:bg-muted"
+                                  >
+                                    Cancel
+                                  </button>
+                                  <button
+                                    onClick={deleteRoute}
+                                    aria-label={`Confirm delete route ${selectedSavedRoute.routeName}`}
+                                    className="flex-1 rounded-lg bg-red-500 px-3 py-2 text-xs font-semibold text-white hover:bg-red-600"
+                                  >
+                                    Delete
+                                  </button>
+                                </div>
+                              </div>
+                            )}
+                          </div>
                         )}
                       </div>
                     )}
@@ -562,24 +727,32 @@ export function HomePage() {
                       <p className="text-sm text-muted-foreground">Activity history</p>
                     </div>
 
-                    <Calendar
-                      mode="single"
-                      selected={selectedDate}
-                      onSelect={setSelectedDate}
-                      modifiers={{
-                        hasRun: (date) => Boolean(runsByDay[dateKey(date)]),
-                      }}
-                      modifiersClassNames={{
-                        hasRun: "border border-green-500 bg-green-500/20 text-green-400",
-                      }}
-                      className="rounded-xl border border-border bg-muted/20"
-                    />
-
-                    {myRuns.length === 0 && (
-                      <div className="rounded-xl border border-dashed border-border p-4 text-sm text-muted-foreground">
-                        No runs yet. Complete a run in the iter mobile app and it'll show up here.
+                    {runsLoading ? (
+                      <div className="space-y-3 animate-pulse">
+                        <div className="h-64 w-full rounded-xl bg-muted/40" />
+                        <div className="h-4 w-1/2 rounded bg-muted" />
+                        <div className="h-4 w-1/3 rounded bg-muted" />
                       </div>
-                    )}
+                    ) : (
+                      <>
+                        <Calendar
+                          mode="single"
+                          selected={selectedDate}
+                          onSelect={setSelectedDate}
+                          modifiers={{
+                            hasRun: (date) => Boolean(runsByDay[dateKey(date)]),
+                          }}
+                          modifiersClassNames={{
+                            hasRun: "border border-green-500 bg-green-500/20 text-green-400",
+                          }}
+                          className="rounded-xl border border-border bg-muted/20"
+                        />
+
+                        {myRuns.length === 0 && (
+                          <div className="rounded-xl border border-dashed border-border p-4 text-sm text-muted-foreground">
+                            No runs yet. Complete a run in the iter mobile app and it'll show up here.
+                          </div>
+                        )}
 
                     {selectedDate && (
                       <div className="rounded-xl border border-border bg-muted/20 p-4">
@@ -601,6 +774,7 @@ export function HomePage() {
                                   const points = run.waypoints.map(([lng, lat]) => [lat, lng] as [number, number]);
                                   setSelectedRoute(points);
                                 }}
+                                aria-label={`View run: ${run.pathName}, ${run.distanceMiles.toFixed(2)} miles`}
                                 className="w-full rounded-lg border border-border bg-background/40 p-3 text-left text-sm transition hover:bg-accent"
                               >
                                 <p className="font-semibold">{run.pathName}</p>
@@ -612,6 +786,8 @@ export function HomePage() {
                           </div>
                         )}
                       </div>
+                    )}
+                      </>
                     )}
                   </div>
                 )}
@@ -659,34 +835,47 @@ export function HomePage() {
                       <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
                         All-time stats
                       </p>
-                      <div className="grid grid-cols-3 gap-2">
-                        <div className="flex flex-col items-center gap-1 rounded-2xl border border-border bg-muted/20 px-2 py-3">
-                          <span className="text-center text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Total Miles</span>
-                          <span className="text-xl font-bold leading-tight">
-                            {myRuns.reduce((sum, r) => sum + r.distanceMiles, 0).toFixed(1)}
-                          </span>
-                          <span className="text-[11px] text-muted-foreground">mi</span>
+                      {runsLoading ? (
+                        <div className="grid grid-cols-3 gap-2 animate-pulse">
+                          {[1, 2, 3].map((i) => (
+                            <div key={i} className="flex flex-col items-center gap-2 rounded-2xl border border-border bg-muted/20 px-2 py-3">
+                              <div className="h-2.5 w-3/4 rounded bg-muted" />
+                              <div className="h-6 w-1/2 rounded bg-muted" />
+                              <div className="h-2 w-1/3 rounded bg-muted" />
+                            </div>
+                          ))}
                         </div>
-                        <div className="flex flex-col items-center gap-1 rounded-2xl border border-border bg-muted/20 px-2 py-3">
-                          <span className="text-center text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Total Runs</span>
-                          <span className="text-xl font-bold leading-tight">{myRuns.length}</span>
-                          <span className="text-[11px] text-muted-foreground">runs</span>
+                      ) : (
+                        <div className="grid grid-cols-3 gap-2">
+                          <div className="flex flex-col items-center gap-1 rounded-2xl border border-border bg-muted/20 px-2 py-3">
+                            <span className="text-center text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Total Miles</span>
+                            <span className="text-xl font-bold leading-tight">
+                              {myRuns.reduce((sum, r) => sum + r.distanceMiles, 0).toFixed(1)}
+                            </span>
+                            <span className="text-[11px] text-muted-foreground">mi</span>
+                          </div>
+                          <div className="flex flex-col items-center gap-1 rounded-2xl border border-border bg-muted/20 px-2 py-3">
+                            <span className="text-center text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Total Runs</span>
+                            <span className="text-xl font-bold leading-tight">{myRuns.length}</span>
+                            <span className="text-[11px] text-muted-foreground">runs</span>
+                          </div>
+                          <div className="flex flex-col items-center gap-1 rounded-2xl border border-border bg-muted/20 px-2 py-3">
+                            <span className="text-center text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Longest</span>
+                            <span className="text-xl font-bold leading-tight">
+                              {myRuns.length > 0
+                                ? Math.max(...myRuns.map((r) => r.distanceMiles)).toFixed(1)
+                                : "0.0"}
+                            </span>
+                            <span className="text-[11px] text-muted-foreground">mi</span>
+                          </div>
                         </div>
-                        <div className="flex flex-col items-center gap-1 rounded-2xl border border-border bg-muted/20 px-2 py-3">
-                          <span className="text-center text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Longest</span>
-                          <span className="text-xl font-bold leading-tight">
-                            {myRuns.length > 0
-                              ? Math.max(...myRuns.map((r) => r.distanceMiles)).toFixed(1)
-                              : "0.0"}
-                          </span>
-                          <span className="text-[11px] text-muted-foreground">mi</span>
-                        </div>
-                      </div>
+                      )}
                     </div>
 
                     {/* Log out */}
                     <button
                       onClick={handleSignOut}
+                      aria-label="Log out"
                       className="flex w-full items-center justify-center gap-2 rounded-xl border border-red-500/40 px-4 py-3 text-sm font-semibold text-red-500 transition hover:bg-red-500/10"
                     >
                       <LogOut size={16} />
