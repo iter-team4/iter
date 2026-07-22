@@ -1,0 +1,1 @@
+export type Panel = "paths" | "calendar" | "profile";
