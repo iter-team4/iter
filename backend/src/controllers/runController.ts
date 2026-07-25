@@ -1,13 +1,9 @@
 import type { Request, Response } from "express";
 import mongoose from "mongoose";
-
 import Run from "../models/Run.js";
 import Route from "../models/Route.js";
 import User from "../models/User.js";
 
-/*
- * POST /api/runs/save
- */
 export const saveRun = async (req: Request, res: Response) => {
   try {
     const {
@@ -89,9 +85,6 @@ export const saveRun = async (req: Request, res: Response) => {
   }
 };
 
-/*
- * GET /api/runs/my-runs
- */
 export const loadRuns = async (req: Request, res: Response) => {
   try {
     if (!req.user?.sub) {

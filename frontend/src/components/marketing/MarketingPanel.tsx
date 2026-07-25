@@ -66,12 +66,12 @@ export function MarketingPanel({ isLogin }: MarketingPanelProps) {
 
       <div className="relative z-10 flex flex-col h-full justify-between">
         {/* Top: logo */}
-      <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2">
           <div className="w-9 h-9 overflow-hidden rounded-xl">
-            <img 
-              src="/iter-logo.png" 
-              alt="iter logo" 
-              className="w-full h-full object-cover" 
+            <img
+              src="/iter-logo.png"
+              alt="iter logo"
+              className="w-full h-full object-cover"
             />
           </div>
           <span
@@ -97,9 +97,9 @@ export function MarketingPanel({ isLogin }: MarketingPanelProps) {
               className="mt-5 text-lg leading-relaxed max-w-md"
               style={{ color: "rgba(237,231,217,0.7)" }}
             >
-              iter lets you plan, save, and revisit your routes anywhere in
-              the world. Build your path your way, and track your consistency
-              over time.
+              iter lets you plan, save, and revisit your routes anywhere in the
+              world. Build your path your way, and track your consistency over
+              time.
             </p>
           </div>
 

@@ -5,9 +5,7 @@ import type { Panel } from "../../types/homepage";
 interface IconRailProps {
   activePanel: Panel | null;
   setActivePanel: React.Dispatch<React.SetStateAction<Panel | null>>;
-  setSelectedRoute: React.Dispatch<
-    React.SetStateAction<[number, number][]>
-  >;
+  setSelectedRoute: React.Dispatch<React.SetStateAction<[number, number][]>>;
   isDark: boolean;
   toggleTheme: () => void;
 }

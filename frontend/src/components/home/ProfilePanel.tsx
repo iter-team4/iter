@@ -88,9 +88,7 @@ export default function ProfilePanel({
                   .toFixed(1)}
               </span>
 
-              <span className="text-[11px] text-muted-foreground">
-                mi
-              </span>
+              <span className="text-[11px] text-muted-foreground">mi</span>
             </div>
 
             <div className="flex flex-col items-center gap-1 rounded-2xl border border-border bg-muted/20 px-2 py-3">
@@ -102,9 +100,7 @@ export default function ProfilePanel({
                 {myRuns.length}
               </span>
 
-              <span className="text-[11px] text-muted-foreground">
-                runs
-              </span>
+              <span className="text-[11px] text-muted-foreground">runs</span>
             </div>
 
             <div className="flex flex-col items-center gap-1 rounded-2xl border border-border bg-muted/20 px-2 py-3">
@@ -114,13 +110,13 @@ export default function ProfilePanel({
 
               <span className="text-xl font-bold leading-tight">
                 {myRuns.length > 0
-                  ? Math.max(...myRuns.map((run) => run.distanceMiles)).toFixed(1)
+                  ? Math.max(...myRuns.map((run) => run.distanceMiles)).toFixed(
+                      1
+                    )
                   : "0.0"}
               </span>
 
-              <span className="text-[11px] text-muted-foreground">
-                mi
-              </span>
+              <span className="text-[11px] text-muted-foreground">mi</span>
             </div>
           </div>
         )}

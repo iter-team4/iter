@@ -47,11 +47,7 @@ export function PasswordInput({
         className="absolute right-0 top-0 h-11 w-11 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
         aria-label={isVisible ? "Hide password" : "Show password"}
       >
-        {isVisible ? (
-          <EyeOff className="size-4" />
-        ) : (
-          <Eye className="size-4" />
-        )}
+        {isVisible ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
       </button>
     </div>
   );
