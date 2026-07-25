@@ -235,7 +235,6 @@ export function HomePage() {
               routeName={routeName}
               setRouteName={setRouteName}
 
-              pathPoints={pathPoints}
               setPathPoints={setPathPoints}
 
               routeGeometry={routeGeometry}
