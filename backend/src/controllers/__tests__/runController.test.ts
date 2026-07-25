@@ -21,7 +21,7 @@ vi.mock("../../models/Route.js", () => ({
 
 vi.mock("../../models/User.js", () => ({
   default: {
-    findOne: vi.fn(),
+    findById: vi.fn(),
   },
 }));
 
@@ -109,7 +109,7 @@ describe("runController", () => {
     });
 
     it("returns 404 when user does not exist", async () => {
-      vi.mocked(User.findOne).mockResolvedValue(null);
+      vi.mocked(User.findById).mockResolvedValue(null);
 
       const req = mockRequest({
         pathId: "507f1f77bcf86cd799439011",
@@ -127,7 +127,7 @@ describe("runController", () => {
 
       await saveRun(req, res);
 
-      expect(User.findOne).toHaveBeenCalled();
+      expect(User.findById).toHaveBeenCalled();
 
       expect(res.status).toHaveBeenCalledWith(404);
       expect(res.json).toHaveBeenCalledWith({
@@ -136,7 +136,7 @@ describe("runController", () => {
     });
 
     it("returns 404 when path does not exist", async () => {
-      vi.mocked(User.findOne).mockResolvedValue({
+      vi.mocked(User.findById).mockResolvedValue({
         _id: "user123",
       } as any);
 
@@ -167,7 +167,7 @@ describe("runController", () => {
     });
 
     it("creates a run successfully", async () => {
-      vi.mocked(User.findOne).mockResolvedValue({
+      vi.mocked(User.findById).mockResolvedValue({
         _id: "user123",
       } as any);
 
@@ -210,7 +210,7 @@ describe("runController", () => {
     });
 
     it("returns 500 when database throws error", async () => {
-      vi.mocked(User.findOne).mockRejectedValue(new Error("Database error"));
+      vi.mocked(User.findById).mockRejectedValue(new Error("Database error"));
 
       const req = mockRequest({
         pathId: "507f1f77bcf86cd799439011",
@@ -252,7 +252,7 @@ describe("runController", () => {
     });
 
     it("returns 404 when user does not exist", async () => {
-      vi.mocked(User.findOne).mockResolvedValue(null);
+      vi.mocked(User.findById).mockResolvedValue(null);
 
       const req = mockRequest();
 
@@ -268,7 +268,7 @@ describe("runController", () => {
     });
 
     it("returns runs successfully", async () => {
-      vi.mocked(User.findOne).mockResolvedValue({
+      vi.mocked(User.findById).mockResolvedValue({
         _id: "user123",
       } as any);
 
@@ -302,7 +302,7 @@ describe("runController", () => {
     });
 
     it("returns 500 on database failure", async () => {
-      vi.mocked(User.findOne).mockRejectedValue(new Error("Database error"));
+      vi.mocked(User.findById).mockRejectedValue(new Error("Database error"));
 
       const req = mockRequest();
 
