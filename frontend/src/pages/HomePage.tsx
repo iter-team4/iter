@@ -126,7 +126,7 @@ export function HomePage() {
     if (!user) return;
 
     setUsername(user.username);
-    setMemberSince(user.memberSince);
+    setMemberSince(user.memberSince); 
   }, []);
 
   const handleSignOut = () => {
@@ -235,7 +235,6 @@ export function HomePage() {
               routeName={routeName}
               setRouteName={setRouteName}
 
-              pathPoints={pathPoints}
               setPathPoints={setPathPoints}
 
               routeGeometry={routeGeometry}

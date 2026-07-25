@@ -36,7 +36,6 @@ app.use("/api/auth", authRoutes);
 app.use("/api/routes", routeRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api/runs", runRoutes);
-
 console.log("✅ All Express Routes Loaded");
 
 // 4. Debug 404 Handler

@@ -18,6 +18,10 @@ export function getUserInfoFromToken() {
     }
 
     return {
+      name: payload.name || payload.username || payload.email || "User",
+      email: payload.email || "",
+      username: payload.username || "",
+      memberSince: payload.memberSince || "",
       username: displayName,
       memberSince: payload["iat"]
         ? new Date(payload["iat"] * 1000).toLocaleDateString("en-US", {

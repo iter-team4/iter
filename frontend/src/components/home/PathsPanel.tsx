@@ -7,8 +7,7 @@ interface PathsPanelProps {
 
   routeName: string;
   setRouteName: React.Dispatch<React.SetStateAction<string>>;
-
-  pathPoints: [number, number][];
+  
   setPathPoints: React.Dispatch<React.SetStateAction<[number, number][]>>;
 
   routeGeometry: [number, number][];
@@ -58,7 +57,6 @@ export default function PathsPanel({
   setPathsTab,
   routeName,
   setRouteName,
-  pathPoints,
   setPathPoints,
   routeGeometry,
   distance,
@@ -113,11 +111,6 @@ export default function PathsPanel({
           <p className="text-sm text-muted-foreground">
             Click on the map to create a walking route.
           </p>
-
-          <div className="rounded-lg border p-3 text-sm">
-            Points:
-            <span className="ml-2 font-semibold">{pathPoints.length}</span>
-          </div>
 
           <div className="rounded-lg border p-3 text-sm">
             Distance:
