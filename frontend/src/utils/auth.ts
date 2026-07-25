@@ -1,32 +1,17 @@
+// Inside src/utils/auth.ts on the frontend
 export function getUserInfoFromToken() {
-  const token = localStorage.getItem("idToken");
+  const token = localStorage.getItem("token");
   if (!token) return null;
 
   try {
-    const payload = JSON.parse(
-      atob(token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/"))
-    );
-
-    // Combine firstName and lastName from our local JWT, fallback to "User"
-    let displayName = "User";
+    const payload = JSON.parse(atob(token.split(".")[1]));
     
-    if (payload.firstName || payload.lastName) {
-      displayName = `${payload.firstName || ""} ${payload.lastName || ""}`.trim();
-    } else if (payload.email) {
-      displayName = payload.email;
-    }
-
     return {
-      username: displayName,
-      memberSince: payload["iat"]
-        ? new Date(payload["iat"] * 1000).toLocaleDateString("en-US", {
-            month: "long",
-            year: "numeric",
-          })
-        : "",
+      name: payload.name || payload.username || payload.email || "User",
+      email: payload.email || "",
+      username: payload.username || ""
     };
-  } catch {
-    console.error("Could not decode idToken");
+  } catch (error) {
     return null;
   }
 }
