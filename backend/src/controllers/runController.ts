@@ -45,9 +45,7 @@ export const saveRun = async (req: Request, res: Response) => {
       });
     }
 
-    const user = await User.findOne({
-      cognitoSub: req.user.sub,
-    });
+    const user = await User.findById(req.user.sub);
 
     if (!user) {
       return res.status(404).json({
@@ -100,9 +98,7 @@ export const loadRuns = async (req: Request, res: Response) => {
       });
     }
 
-    const user = await User.findOne({
-      cognitoSub: req.user.sub,
-    });
+    const user = await User.findById(req.user.sub);
 
     if (!user) {
       return res.status(404).json({
