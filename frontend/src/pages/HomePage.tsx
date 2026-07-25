@@ -126,7 +126,7 @@ export function HomePage() {
     if (!user) return;
 
     setUsername(user.username);
-    setMemberSince(user.memberSince);
+    setMemberSince(user.memberSince); 
   }, []);
 
   const handleSignOut = () => {
