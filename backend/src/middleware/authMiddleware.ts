@@ -2,6 +2,19 @@ import type { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import { isExpired } from "../utils/createJWT.js";
 
+declare global {
+  namespace Express {
+    interface Request {
+      user?: {
+        id: string;
+        name?: string;
+        username?: string;
+        email?: string;
+      };
+    }
+  }
+}
+
 export async function authMiddleware(
   req: Request,
   res: Response,
@@ -31,8 +44,12 @@ export async function authMiddleware(
 
     // Decode to attach user info to request
     const decoded = jwt.decode(token) as any;
+    
+    // Updated to match the interface: using 'id' instead of 'sub'
     req.user = {
-      sub: decoded.userId || decoded.id,
+      id: decoded.userId || decoded.id,
+      name: decoded.name,
+      username: decoded.username,
       email: decoded.email,
     };
 

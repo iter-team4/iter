@@ -144,11 +144,13 @@ export const login = async (req: Request, res: Response) => {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
-    const nameParts = (user.name || "").split(" ");
-    const firstName = nameParts[0] || "";
-    const lastName = nameParts.slice(1).join(" ") || "";
-
-    const tokenResult = createToken(firstName, lastName, user._id.toString());
+    // Pass real database fields cleanly into the token generator
+    const tokenResult = createToken(
+      user._id.toString(),
+      user.name || "",
+      user.username || "",
+      user.email || ""
+    );
 
     if (tokenResult.error) {
       return res

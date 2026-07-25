@@ -18,16 +18,17 @@ export function getUserInfoFromToken() {
     }
 
     return {
-      name: payload.name || displayName || "User",
-      email: payload.email || "",
-      username: payload.username || "",
-      memberSince: payload["iat"]
-        ? new Date(payload["iat"] * 1000).toLocaleDateString("en-US", {
-            month: "long",
-            year: "numeric",
-          })
-        : payload.memberSince || "",
-    };
+    name: payload.name || displayName || "User",
+    displayName: displayName || payload.name || "User", // <--- Add this if Profile component checks user.displayName
+    email: payload.email || "",
+    username: payload.username || "",
+    memberSince: payload["iat"]
+      ? new Date(payload["iat"] * 1000).toLocaleDateString("en-US", {
+          month: "long",
+          year: "numeric",
+        })
+      : payload.memberSince || "",
+  };
   } catch {
     console.error("Could not decode idToken");
     return null;
