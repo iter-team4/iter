@@ -9,7 +9,8 @@ export function getUserInfoFromToken() {
     return {
       name: payload.name || payload.username || payload.email || "User",
       email: payload.email || "",
-      username: payload.username || ""
+      username: payload.username || "",
+      memberSince: payload.memberSince || "",
     };
   } catch (error) {
     return null;
