@@ -3,6 +3,7 @@ import cors from "cors";
 import authRoutes from "./routes/authRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import routeRoutes from "./routes/routeRoutes.js";
+import runRoutes from "./routes/runRoutes.js";
 
 const app = express();
 
@@ -34,7 +35,7 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/routes", routeRoutes);
 app.use("/api/user", userRoutes);
-
+app.use("/api/runs", runRoutes);
 console.log("✅ All Express Routes Loaded");
 
 // 4. Debug 404 Handler
