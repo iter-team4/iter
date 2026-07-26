@@ -24,7 +24,12 @@ const API_BASE = import.meta.env.VITE_API_URL;
 async function submitLogin(
   email: string,
   password: string
-): Promise<{ ok: boolean; idToken?: string; accessToken?: string; errorMessage?: string }> {
+): Promise<{
+  ok: boolean;
+  idToken?: string;
+  accessToken?: string;
+  errorMessage?: string;
+}> {
   try {
     const res = await fetch(`${API_BASE}/api/auth/login`, {
       method: "POST",
@@ -103,7 +108,9 @@ export function LoginForm() {
         >
           <CardTitle
             className="text-3xl font-bold"
-            style={{ color: isDark ? brandColors.accent : brandColors.accentText }}
+            style={{
+              color: isDark ? brandColors.accent : brandColors.accentText,
+            }}
           >
             Welcome Back
           </CardTitle>
@@ -147,7 +154,9 @@ export function LoginForm() {
               type="button"
               onClick={() => navigate("/forgot-password")}
               className="text-sm hover:underline transition-colors"
-              style={{ color: isDark ? brandColors.accent : brandColors.accentText }}
+              style={{
+                color: isDark ? brandColors.accent : brandColors.accentText,
+              }}
             >
               Forgot password?
             </button>

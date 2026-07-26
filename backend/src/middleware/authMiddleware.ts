@@ -11,7 +11,6 @@ export async function authMiddleware(
     const authHeader = req.headers.authorization;
     let token = "";
 
-    // Support both Mobile (Bearer header) and Web (req.body.jwtToken from prof's guide)
     if (authHeader?.startsWith("Bearer ")) {
       token = authHeader.split(" ")[1];
     } else if (req.body.jwtToken) {
@@ -22,7 +21,6 @@ export async function authMiddleware(
       return res.status(401).json({ error: "Missing token", jwtToken: "" });
     }
 
-    // PROFESSOR'S EXPIRATION CHECK:
     if (isExpired(token)) {
       return res
         .status(401)

@@ -23,15 +23,11 @@ type HomeMapProps = {
   pathsTab: "create" | "saved";
 
   pathPoints: Coordinate[];
-  setPathPoints: React.Dispatch<
-    React.SetStateAction<Coordinate[]>
-  >;
+  setPathPoints: React.Dispatch<React.SetStateAction<Coordinate[]>>;
 
   routeGeometry: Coordinate[];
   selectedRoute: Coordinate[];
-  setSelectedRoute: React.Dispatch<
-    React.SetStateAction<Coordinate[]>
-  >;
+  setSelectedRoute: React.Dispatch<React.SetStateAction<Coordinate[]>>;
 };
 
 export default function HomeMap({
@@ -74,29 +70,18 @@ export default function HomeMap({
           if (activePanel === "paths" && pathsTab === "create") {
             setSelectedRoute([]);
 
-            setPathPoints((prev) => [
-              ...prev,
-              point,
-            ]);
+            setPathPoints((prev) => [...prev, point]);
           }
         }}
       />
 
       <ZoomToRoute
-        route={
-          selectedRoute.length > 0
-            ? selectedRoute
-            : routeGeometry
-        }
+        route={selectedRoute.length > 0 ? selectedRoute : routeGeometry}
       />
 
-      {routeGeometry.length > 0 && (
-        <Polyline positions={routeGeometry} />
-      )}
+      {routeGeometry.length > 0 && <Polyline positions={routeGeometry} />}
 
-      {selectedRoute.length > 0 && (
-        <Polyline positions={selectedRoute} />
-      )}
+      {selectedRoute.length > 0 && <Polyline positions={selectedRoute} />}
 
       {pathPoints.map((point, index) => (
         <Marker
@@ -107,9 +92,7 @@ export default function HomeMap({
           alt={`Route way point ${index + 1}`}
           eventHandlers={{
             click: () => {
-              setPathPoints((prev) =>
-                prev.filter((_, i) => i !== index)
-              );
+              setPathPoints((prev) => prev.filter((_, i) => i !== index));
             },
           }}
         />

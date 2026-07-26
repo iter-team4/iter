@@ -10,7 +10,8 @@ export function getUserInfoFromToken() {
     let displayName = "User";
 
     if (payload.firstName || payload.lastName) {
-      displayName = `${payload.firstName || ""} ${payload.lastName || ""}`.trim();
+      displayName =
+        `${payload.firstName || ""} ${payload.lastName || ""}`.trim();
     } else if (payload.username) {
       displayName = payload.username;
     } else if (payload.email) {
