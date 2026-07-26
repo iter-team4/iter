@@ -11,7 +11,7 @@ export const saveRoute = async (req: Request, res: Response) => {
       return res.status(400).json({ message: "Invalid route data" });
     }
 
-    const userId = req.user?.sub;
+    const userId = req.user?.id;
     if (!userId) {
       return res.status(401).json({ message: "Unauthorized" });
     }
@@ -38,7 +38,7 @@ export const saveRoute = async (req: Request, res: Response) => {
 
 export const loadRoutes = async (req: Request, res: Response) => {
   try {
-    const userId = req.user?.sub;
+    const userId = req.user?.id;
     if (!userId) {
       return res.status(401).json({ message: "Unauthorized" });
     }
@@ -60,7 +60,7 @@ export const loadRoutes = async (req: Request, res: Response) => {
 
 export const searchRoutes = async (req: Request, res: Response) => {
   try {
-    const userId = req.user?.sub;
+    const userId = req.user?.id;
     if (!userId) {
       return res.status(401).json({ message: "Unauthorized" });
     }
@@ -93,7 +93,7 @@ export const searchRoutes = async (req: Request, res: Response) => {
 
 export const deleteRoute = async (req: Request, res: Response) => {
   try {
-    const userId = req.user?.sub;
+    const userId = req.user?.id;
     if (!userId) {
       return res.status(401).json({ message: "Unauthorized" });
     }
