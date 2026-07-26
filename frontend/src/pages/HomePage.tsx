@@ -162,6 +162,10 @@ export function HomePage() {
     calculateRoute();
   }, [pathPoints]);
 
+  const undoPoint = () => {
+    setPathPoints((prev) => prev.slice(0, -1));
+  };
+
   // Save route to backend
   const saveRoute = async (routeData: {
     geometry: [number, number][];
@@ -236,6 +240,8 @@ export function HomePage() {
               setRouteName={setRouteName}
 
               setPathPoints={setPathPoints}
+
+              undoPoint={undoPoint}
 
               routeGeometry={routeGeometry}
               distance={distance}

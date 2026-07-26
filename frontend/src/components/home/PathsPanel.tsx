@@ -9,6 +9,7 @@ interface PathsPanelProps {
   setRouteName: React.Dispatch<React.SetStateAction<string>>;
 
   setPathPoints: React.Dispatch<React.SetStateAction<[number, number][]>>;
+  undoPoint: () => void;
 
   routeGeometry: [number, number][];
   distance: number;
@@ -41,15 +42,8 @@ interface PathsPanelProps {
 
   deleteRoute: () => void;
 
-  routeMsg: {
-    type: "success" | "error";
-    text: string;
-  } | null;
-
-  deleteMsg: {
-    type: "success" | "error";
-    text: string;
-  } | null;
+  routeMsg: { type: "success" | "error"; text: string } | null;
+  deleteMsg: { type: "success" | "error"; text: string } | null;
 }
 
 export default function PathsPanel({
@@ -58,6 +52,7 @@ export default function PathsPanel({
   routeName,
   setRouteName,
   setPathPoints,
+  undoPoint,
   routeGeometry,
   distance,
   saveRoute,
@@ -138,12 +133,21 @@ export default function PathsPanel({
             Save Route
           </button>
 
-          <button
-            onClick={() => setPathPoints([])}
-            className="w-full rounded-lg border px-4 py-2"
-          >
-            Clear
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={undoPoint}
+              className="flex-1 rounded-lg border px-4 py-2 text-sm"
+            >
+              Undo Point
+            </button>
+
+            <button
+              onClick={() => setPathPoints([])}
+              className="flex-1 rounded-lg border px-4 py-2 text-sm"
+            >
+              Clear
+            </button>
+          </div>
 
           {routeMsg && (
             <p
