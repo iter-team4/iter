@@ -55,13 +55,9 @@ describe("authController", () => {
   describe("register", () => {
     it("handles missing fields", async () => {
       vi.mocked(User.findOne).mockResolvedValue(null);
-
       vi.mocked(bcrypt.genSalt).mockResolvedValue("salt" as never);
-
       vi.mocked(bcrypt.hash).mockResolvedValue("hashed" as never);
-
       vi.mocked(User.create).mockResolvedValue({} as any);
-
       vi.mocked(sendEmail).mockResolvedValue(undefined);
 
       const req = {
@@ -96,12 +92,12 @@ describe("authController", () => {
 
     it("creates user and sends email", async () => {
       vi.mocked(User.findOne).mockResolvedValue(null);
-
       vi.mocked(bcrypt.genSalt).mockResolvedValue("salt" as never);
-
       vi.mocked(bcrypt.hash).mockResolvedValue("hashed" as never);
 
-      vi.mocked(User.create).mockResolvedValue({} as any);
+      vi.mocked(User.create).mockResolvedValue({
+        email: "test@test.com",
+      } as any);
 
       vi.mocked(sendEmail).mockResolvedValue(undefined);
 
@@ -119,9 +115,7 @@ describe("authController", () => {
       await register(req, res);
 
       expect(User.create).toHaveBeenCalled();
-
       expect(sendEmail).toHaveBeenCalled();
-
       expect(res.status).toHaveBeenCalledWith(201);
     });
 
@@ -194,7 +188,6 @@ describe("authController", () => {
       await verifyEmail(req, res);
 
       expect(user.save).toHaveBeenCalled();
-
       expect(res.status).toHaveBeenCalledWith(200);
     });
 
@@ -268,7 +261,6 @@ describe("authController", () => {
       await resendCode(req, res);
 
       expect(sendEmail).toHaveBeenCalled();
-
       expect(res.status).toHaveBeenCalledWith(200);
     });
   });
@@ -306,6 +298,7 @@ describe("authController", () => {
     it("rejects incorrect password", async () => {
       vi.mocked(User.findOne).mockResolvedValue({
         password: "hash",
+        isVerified: true,
       } as any);
 
       vi.mocked(bcrypt.compare).mockResolvedValue(false as never);
@@ -324,6 +317,31 @@ describe("authController", () => {
       expect(res.status).toHaveBeenCalledWith(401);
     });
 
+    it("rejects unverified users", async () => {
+      vi.mocked(User.findOne).mockResolvedValue({
+        _id: "123",
+        password: "hash",
+        isVerified: false,
+      } as any);
+
+      vi.mocked(bcrypt.compare).mockResolvedValue(true as never);
+
+      const req = {
+        body: {
+          email: "test@test.com",
+          password: "password",
+        },
+      } as Request;
+
+      const res = mockResponse();
+
+      await login(req, res);
+
+      expect(createToken).not.toHaveBeenCalled();
+
+      expect(res.status).toHaveBeenCalledWith(401);
+    });
+
     it("logs in successfully", async () => {
       vi.mocked(User.findOne).mockResolvedValue({
         _id: "123",
@@ -331,6 +349,7 @@ describe("authController", () => {
         name: "Peter",
         username: "peter",
         email: "test@test.com",
+        isVerified: true,
       } as any);
 
       vi.mocked(bcrypt.compare).mockResolvedValue(true as never);
