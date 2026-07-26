@@ -1,15 +1,14 @@
 import jwt from "jsonwebtoken";
 import "dotenv/config";
 
-const SECRET =
-  process.env.JWT_SECRET || "fallback_secret_key";
+const SECRET = process.env.JWT_SECRET || "fallback_secret_key";
 
 // Create a JWT token
 export const createToken = (
   userId: string,
   name: string,
   username: string,
-  email: string
+  email: string,
 ) => {
   try {
     const payload = {
