@@ -42,7 +42,7 @@ export async function authMiddleware(
 
     // Decode to attach user info to request
     const decoded = jwt.decode(token) as any;
-    
+
     // Updated to match the interface: using 'id' instead of 'sub'
     req.user = {
       id: decoded.userId || decoded.id,

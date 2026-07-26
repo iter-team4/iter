@@ -148,7 +148,7 @@ export const login = async (req: Request, res: Response) => {
       user._id.toString(),
       user.name || "",
       user.username || "",
-      user.email || ""
+      user.email || "",
     );
 
     if (tokenResult.error) {

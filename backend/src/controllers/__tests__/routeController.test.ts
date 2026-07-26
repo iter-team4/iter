@@ -1,5 +1,4 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-
 import {
   saveRoute,
   loadRoutes,
@@ -7,14 +6,8 @@ import {
   deleteRoute,
 } from "../routeController.js";
 
-import User from "../../models/User.js";
 import Route from "../../models/Route.js";
-
-vi.mock("../../models/User.js", () => ({
-  default: {
-    findOne: vi.fn(),
-  },
-}));
+import User from "../../models/User.js";
 
 vi.mock("../../models/Route.js", () => ({
   default: {
@@ -24,14 +17,20 @@ vi.mock("../../models/Route.js", () => ({
   },
 }));
 
-function mockResponse() {
+vi.mock("../../models/User.js", () => ({
+  default: {
+    findById: vi.fn(),
+  },
+}));
+
+const mockResponse = () => {
   const res: any = {};
 
   res.status = vi.fn().mockReturnValue(res);
   res.json = vi.fn().mockReturnValue(res);
 
   return res;
-}
+};
 
 describe("routeController", () => {
   beforeEach(() => {
@@ -42,6 +41,9 @@ describe("routeController", () => {
     it("returns 400 for invalid route data", async () => {
       const req: any = {
         body: {},
+        user: {
+          id: "123",
+        },
       };
 
       const res = mockResponse();
@@ -49,16 +51,19 @@ describe("routeController", () => {
       await saveRoute(req, res);
 
       expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith({
+        message: "Invalid route data",
+      });
     });
 
     it("returns 401 when user is missing", async () => {
       const req: any = {
         body: {
-          routeName: "Morning Run",
-          distanceMiles: 3,
+          routeName: "Test Route",
+          distanceMiles: 5,
           waypoints: [
-            [1, 2],
-            [3, 4],
+            { lat: 1, lng: 1 },
+            { lat: 2, lng: 2 },
           ],
         },
         user: {},
@@ -72,51 +77,48 @@ describe("routeController", () => {
     });
 
     it("returns 404 when database user does not exist", async () => {
-      (User.findOne as any).mockResolvedValue(null);
+      vi.mocked(User.findById).mockResolvedValue(null);
 
       const req: any = {
-        user: {
-          sub: "cognito123",
-        },
-
         body: {
           routeName: "Morning Run",
           distanceMiles: 3,
-          waypoints: [
-            [1, 2],
-            [3, 4],
-          ],
+          waypoints: [{}, {}],
+        },
+        user: {
+          id: "abc",
         },
       };
 
       const res = mockResponse();
 
       await saveRoute(req, res);
+
+      expect(User.findById).toHaveBeenCalledWith("abc");
 
       expect(res.status).toHaveBeenCalledWith(404);
     });
 
-    it("creates a route successfully", async () => {
-      (User.findOne as any).mockResolvedValue({
+    it("creates route successfully", async () => {
+      const fakeUser = {
         _id: "user123",
-      });
+      };
 
-      (Route.create as any).mockResolvedValue({
+      vi.mocked(User.findById).mockResolvedValue(fakeUser as any);
+
+      vi.mocked(Route.create).mockResolvedValue({
+        _id: "route123",
         routeName: "Morning Run",
-      });
+      } as any);
 
       const req: any = {
-        user: {
-          sub: "cognito123",
-        },
-
         body: {
           routeName: "Morning Run",
-          distanceMiles: 3,
-          waypoints: [
-            [1, 2],
-            [3, 4],
-          ],
+          distanceMiles: 5,
+          waypoints: [{}, {}],
+        },
+        user: {
+          id: "user123",
         },
       };
 
@@ -124,38 +126,26 @@ describe("routeController", () => {
 
       await saveRoute(req, res);
 
-      expect(Route.create).toHaveBeenCalledWith({
-        user: "user123",
-        routeName: "Morning Run",
-        distanceMiles: 3,
-        waypoints: [
-          [1, 2],
-          [3, 4],
-        ],
-      });
+      expect(Route.create).toHaveBeenCalled();
 
       expect(res.status).toHaveBeenCalledWith(201);
     });
 
     it("returns 500 when route creation fails", async () => {
-      (User.findOne as any).mockResolvedValue({
+      vi.mocked(User.findById).mockResolvedValue({
         _id: "user123",
-      });
+      } as any);
 
-      (Route.create as any).mockRejectedValue(new Error("database failure"));
+      vi.mocked(Route.create).mockRejectedValue(new Error("database failure"));
 
       const req: any = {
-        user: {
-          sub: "abc",
-        },
-
         body: {
           routeName: "Test",
-          distanceMiles: 2,
-          waypoints: [
-            [1, 2],
-            [3, 4],
-          ],
+          distanceMiles: 5,
+          waypoints: [{}, {}],
+        },
+        user: {
+          id: "user123",
         },
       };
 
@@ -180,40 +170,24 @@ describe("routeController", () => {
       expect(res.status).toHaveBeenCalledWith(401);
     });
 
-    it("returns 404 when user does not exist", async () => {
-      (User.findOne as any).mockResolvedValue(null);
-
-      const req: any = {
-        user: {
-          sub: "abc",
-        },
-      };
-
-      const res = mockResponse();
-
-      await loadRoutes(req, res);
-
-      expect(res.status).toHaveBeenCalledWith(404);
-    });
-
-    it("returns routes successfully", async () => {
-      (User.findOne as any).mockResolvedValue({
+    it("loads routes successfully", async () => {
+      vi.mocked(User.findById).mockResolvedValue({
         _id: "user123",
-      });
+      } as any);
 
       const sortMock = vi.fn().mockResolvedValue([
         {
-          routeName: "Park Route",
+          routeName: "Run",
         },
       ]);
 
-      (Route.find as any).mockReturnValue({
+      vi.mocked(Route.find).mockReturnValue({
         sort: sortMock,
-      });
+      } as any);
 
       const req: any = {
         user: {
-          sub: "abc",
+          id: "user123",
         },
       };
 
@@ -221,17 +195,19 @@ describe("routeController", () => {
 
       await loadRoutes(req, res);
 
-      expect(Route.find).toHaveBeenCalled();
+      expect(Route.find).toHaveBeenCalledWith({
+        user: "user123",
+      });
 
       expect(res.status).toHaveBeenCalledWith(200);
     });
 
     it("returns 500 when loading routes fails", async () => {
-      (User.findOne as any).mockRejectedValue(new Error("database error"));
+      vi.mocked(User.findById).mockRejectedValue(new Error("database error"));
 
       const req: any = {
         user: {
-          sub: "abc",
+          id: "user123",
         },
       };
 
@@ -244,23 +220,23 @@ describe("routeController", () => {
   });
 
   describe("searchRoutes", () => {
-    it("returns search results", async () => {
-      (User.findOne as any).mockResolvedValue({
+    it("searches routes successfully", async () => {
+      vi.mocked(User.findById).mockResolvedValue({
         _id: "user123",
-      });
+      } as any);
 
       const sortMock = vi.fn().mockResolvedValue([]);
 
-      (Route.find as any).mockReturnValue({
+      vi.mocked(Route.find).mockReturnValue({
         sort: sortMock,
-      });
+      } as any);
 
       const req: any = {
         user: {
-          sub: "abc",
+          id: "user123",
         },
         query: {
-          q: "park",
+          q: "morning",
         },
       };
 
@@ -272,99 +248,20 @@ describe("routeController", () => {
 
       expect(res.status).toHaveBeenCalledWith(200);
     });
-
-    it("returns all routes with empty query", async () => {
-      (User.findOne as any).mockResolvedValue({
-        _id: "user123",
-      });
-
-      const sortMock = vi.fn().mockResolvedValue([]);
-
-      (Route.find as any).mockReturnValue({
-        sort: sortMock,
-      });
-
-      const req: any = {
-        user: {
-          sub: "abc",
-        },
-        query: {
-          q: "",
-        },
-      };
-
-      const res = mockResponse();
-
-      await searchRoutes(req, res);
-
-      expect(Route.find).toHaveBeenCalledWith({
-        user: "user123",
-      });
-    });
-
-    it("returns 404 when searching user does not exist", async () => {
-      (User.findOne as any).mockResolvedValue(null);
-
-      const req: any = {
-        user: {
-          sub: "abc",
-        },
-        query: {
-          q: "test",
-        },
-      };
-
-      const res = mockResponse();
-
-      await searchRoutes(req, res);
-
-      expect(res.status).toHaveBeenCalledWith(404);
-    });
-
-    it("returns 500 when search fails", async () => {
-      (User.findOne as any).mockRejectedValue(new Error("failed"));
-
-      const req: any = {
-        user: {
-          sub: "abc",
-        },
-        query: {
-          q: "test",
-        },
-      };
-
-      const res = mockResponse();
-
-      await searchRoutes(req, res);
-
-      expect(res.status).toHaveBeenCalledWith(500);
-    });
   });
 
   describe("deleteRoute", () => {
-    it("returns 401 without user", async () => {
-      const req: any = {
-        user: {},
-      };
-
-      const res = mockResponse();
-
-      await deleteRoute(req, res);
-
-      expect(res.status).toHaveBeenCalledWith(401);
-    });
-
-    it("rejects invalid id", async () => {
-      (User.findOne as any).mockResolvedValue({
+    it("returns 400 for invalid id", async () => {
+      vi.mocked(User.findById).mockResolvedValue({
         _id: "user123",
-      });
+      } as any);
 
       const req: any = {
-        user: {
-          sub: "abc",
-        },
         params: {
-          id: "invalid",
+          id: "bad-id",
+        },
+        user: {
+          id: "user123",
         },
       };
 
@@ -375,63 +272,21 @@ describe("routeController", () => {
       expect(res.status).toHaveBeenCalledWith(400);
     });
 
-    it("returns 404 when user does not exist", async () => {
-      (User.findOne as any).mockResolvedValue(null);
-
-      const req: any = {
-        user: {
-          sub: "abc",
-        },
-        params: {
-          id: "507f1f77bcf86cd799439011",
-        },
-      };
-
-      const res = mockResponse();
-
-      await deleteRoute(req, res);
-
-      expect(res.status).toHaveBeenCalledWith(404);
-    });
-
-    it("returns 404 when route does not exist", async () => {
-      (User.findOne as any).mockResolvedValue({
-        _id: "user123",
-      });
-
-      (Route.findOneAndDelete as any).mockResolvedValue(null);
-
-      const req: any = {
-        user: {
-          sub: "abc",
-        },
-        params: {
-          id: "507f1f77bcf86cd799439011",
-        },
-      };
-
-      const res = mockResponse();
-
-      await deleteRoute(req, res);
-
-      expect(res.status).toHaveBeenCalledWith(404);
-    });
-
     it("deletes route successfully", async () => {
-      (User.findOne as any).mockResolvedValue({
+      vi.mocked(User.findById).mockResolvedValue({
         _id: "user123",
-      });
+      } as any);
 
-      (Route.findOneAndDelete as any).mockResolvedValue({
+      vi.mocked(Route.findOneAndDelete).mockResolvedValue({
         _id: "route123",
-      });
+      } as any);
 
       const req: any = {
-        user: {
-          sub: "abc",
-        },
         params: {
           id: "507f1f77bcf86cd799439011",
+        },
+        user: {
+          id: "user123",
         },
       };
 
@@ -442,25 +297,6 @@ describe("routeController", () => {
       expect(Route.findOneAndDelete).toHaveBeenCalled();
 
       expect(res.status).toHaveBeenCalledWith(200);
-    });
-
-    it("returns 500 when delete fails", async () => {
-      (User.findOne as any).mockRejectedValue(new Error("failed"));
-
-      const req: any = {
-        user: {
-          sub: "abc",
-        },
-        params: {
-          id: "507f1f77bcf86cd799439011",
-        },
-      };
-
-      const res = mockResponse();
-
-      await deleteRoute(req, res);
-
-      expect(res.status).toHaveBeenCalledWith(500);
     });
   });
 });

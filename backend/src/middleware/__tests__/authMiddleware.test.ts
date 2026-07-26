@@ -1,160 +1,191 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import type { Request, Response, NextFunction } from "express";
-
-const { verifyMock } = vi.hoisted(() => {
-  return {
-    verifyMock: vi.fn(),
-  };
-});
-
-vi.mock("aws-jwt-verify", () => {
-  return {
-    CognitoJwtVerifier: {
-      create: vi.fn(() => ({
-        verify: verifyMock,
-      })),
-    },
-  };
-});
-
 import { authMiddleware } from "../authMiddleware.js";
 
-describe("authMiddleware", () => {
-  let req: Partial<Request>;
-  let res: Partial<Response>;
-  let next: NextFunction;
+import jwt from "jsonwebtoken";
+import { isExpired } from "../../utils/createJWT.js";
 
+vi.mock("../../utils/createJWT.js", () => ({
+  isExpired: vi.fn(),
+}));
+
+vi.mock("jsonwebtoken", () => ({
+  default: {
+    decode: vi.fn(),
+  },
+}));
+
+const mockResponse = () => {
+  const res: any = {};
+
+  res.status = vi.fn().mockReturnValue(res);
+  res.json = vi.fn().mockReturnValue(res);
+
+  return res;
+};
+
+describe("authMiddleware", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+  });
 
-    req = {
+  it("returns 401 when token is missing", async () => {
+    const req: any = {
       headers: {},
+      body: {},
     };
 
-    res = {
-      status: vi.fn().mockReturnThis(),
-      json: vi.fn().mockReturnThis(),
-    };
+    const res = mockResponse();
 
-    next = vi.fn();
-  });
+    const next = vi.fn();
 
-  it("returns 401 when authorization header is missing", async () => {
-    await authMiddleware(req as Request, res as Response, next);
+    await authMiddleware(req, res, next);
 
     expect(res.status).toHaveBeenCalledWith(401);
+
     expect(res.json).toHaveBeenCalledWith({
-      message: "Missing authorization token",
+      error: "Missing token",
+      jwtToken: "",
     });
 
     expect(next).not.toHaveBeenCalled();
   });
 
-  it("returns 401 when bearer token is missing", async () => {
-    req.headers = {
-      authorization: "Bearer ",
+  it("accepts token from Authorization header", async () => {
+    vi.mocked(isExpired).mockReturnValue(false);
+
+    vi.mocked(jwt.decode).mockReturnValue({
+      id: "user123",
+      name: "Peter",
+      username: "peter",
+      email: "test@test.com",
+    } as any);
+
+    const req: any = {
+      headers: {
+        authorization: "Bearer faketoken",
+      },
+      body: {},
     };
 
-    await authMiddleware(req as Request, res as Response, next);
+    const res = mockResponse();
+
+    const next = vi.fn();
+
+    await authMiddleware(req, res, next);
+
+    expect(jwt.decode).toHaveBeenCalledWith("faketoken");
+
+    expect(req.user).toEqual({
+      id: "user123",
+      name: "Peter",
+      username: "peter",
+      email: "test@test.com",
+    });
+
+    expect(next).toHaveBeenCalled();
+  });
+
+  it("accepts token from body jwtToken", async () => {
+    vi.mocked(isExpired).mockReturnValue(false);
+
+    vi.mocked(jwt.decode).mockReturnValue({
+      id: "abc",
+    } as any);
+
+    const req: any = {
+      headers: {},
+      body: {
+        jwtToken: "token123",
+      },
+    };
+
+    const res = mockResponse();
+
+    const next = vi.fn();
+
+    await authMiddleware(req, res, next);
+
+    expect(jwt.decode).toHaveBeenCalledWith("token123");
+
+    expect(next).toHaveBeenCalled();
+  });
+
+  it("returns 401 when token is expired", async () => {
+    vi.mocked(isExpired).mockReturnValue(true);
+
+    const req: any = {
+      headers: {
+        authorization: "Bearer expiredtoken",
+      },
+      body: {},
+    };
+
+    const res = mockResponse();
+
+    const next = vi.fn();
+
+    await authMiddleware(req, res, next);
 
     expect(res.status).toHaveBeenCalledWith(401);
 
     expect(res.json).toHaveBeenCalledWith({
-      message: "Missing token",
+      error: "The JWT is no longer valid",
+      jwtToken: "",
     });
 
     expect(next).not.toHaveBeenCalled();
   });
 
-  it("returns 401 when token verification fails", async () => {
-    req.headers = {
-      authorization: "Bearer invalid-token",
+  it("handles invalid jwt decode", async () => {
+    vi.mocked(isExpired).mockReturnValue(false);
+
+    vi.mocked(jwt.decode).mockImplementation(() => {
+      throw new Error("bad token");
+    });
+
+    const req: any = {
+      headers: {
+        authorization: "Bearer badtoken",
+      },
+      body: {},
     };
 
-    verifyMock.mockRejectedValue(new Error("Invalid token"));
+    const res = mockResponse();
 
-    await authMiddleware(req as Request, res as Response, next);
+    const next = vi.fn();
+
+    await authMiddleware(req, res, next);
 
     expect(res.status).toHaveBeenCalledWith(401);
 
     expect(res.json).toHaveBeenCalledWith({
-      message: "Invalid token",
+      error: "Invalid or expired token",
+      jwtToken: "",
     });
-
-    expect(next).not.toHaveBeenCalled();
   });
 
-  it("allows request with valid token", async () => {
-    req.headers = {
-      authorization: "Bearer valid-token",
+  it("uses userId fallback when id is missing", async () => {
+    vi.mocked(isExpired).mockReturnValue(false);
+
+    vi.mocked(jwt.decode).mockReturnValue({
+      userId: "userid123",
+    } as any);
+
+    const req: any = {
+      headers: {
+        authorization: "Bearer token",
+      },
+      body: {},
     };
 
-    verifyMock.mockResolvedValue({
-      sub: "cognito123",
-      email: "test@example.com",
-    });
+    const res = mockResponse();
 
-    await authMiddleware(req as Request, res as Response, next);
+    const next = vi.fn();
 
-    expect(req.user).toEqual({
-      sub: "cognito123",
-      email: "test@example.com",
-    });
+    await authMiddleware(req, res, next);
+
+    expect(req.user.id).toBe("userid123");
 
     expect(next).toHaveBeenCalled();
-  });
-
-  it("does not attach email when payload email is not a string", async () => {
-    req.headers = {
-      authorization: "Bearer valid-token",
-    };
-
-    verifyMock.mockResolvedValue({
-      sub: "cognito123",
-      email: 123,
-    });
-
-    await authMiddleware(req as Request, res as Response, next);
-
-    expect(req.user).toEqual({
-      sub: "cognito123",
-    });
-
-    expect(next).toHaveBeenCalled();
-  });
-
-  it("handles payload without email", async () => {
-    req.headers = {
-      authorization: "Bearer valid-token",
-    };
-
-    verifyMock.mockResolvedValue({
-      sub: "cognito123",
-    });
-
-    await authMiddleware(req as Request, res as Response, next);
-
-    expect(req.user).toEqual({
-      sub: "cognito123",
-    });
-
-    expect(next).toHaveBeenCalled();
-  });
-
-  it("handles token with extra spaces", async () => {
-    req.headers = {
-      authorization: "Bearer token123 extra",
-    };
-
-    verifyMock.mockResolvedValue({
-      sub: "abc",
-    });
-
-    await authMiddleware(req as Request, res as Response, next);
-
-    expect(next).toHaveBeenCalled();
-    expect(req.user).toEqual({
-      sub: "abc",
-    });
   });
 });
