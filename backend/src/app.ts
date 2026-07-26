@@ -16,6 +16,8 @@ app.use(
   cors({
     origin: true,
     credentials: true,
+    // Expose the Authorization header to the frontend
+    //exposedHeaders: ["Authorization"],
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: [
       "Content-Type",
