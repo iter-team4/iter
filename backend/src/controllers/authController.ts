@@ -143,6 +143,13 @@ export const login = async (req: Request, res: Response) => {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
+    // ADD THIS CHECK: Prevent login if the user hasn't verified their email yet
+    if (!user.isVerified) {
+      return res.status(401).json({ 
+        message: "Invalid credentials or user not confirmed" 
+      });
+    }
+
     // Pass real database fields cleanly into the token generator
     const tokenResult = createToken(
       user._id.toString(),
