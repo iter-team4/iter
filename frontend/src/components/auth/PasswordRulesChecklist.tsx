@@ -6,7 +6,9 @@ interface PasswordRulesChecklistProps {
   password: string;
 }
 
-export function PasswordRulesChecklist({ password }: PasswordRulesChecklistProps) {
+export function PasswordRulesChecklist({
+  password,
+}: PasswordRulesChecklistProps) {
   return (
     <motion.ul
       initial={{ opacity: 0, y: -4 }}

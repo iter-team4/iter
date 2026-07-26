@@ -7,7 +7,9 @@ export const sendEmail = async (
   html: string,
 ) => {
   if (!process.env.SENDGRID_API_KEY || !process.env.SENDGRID_FROM_EMAIL) {
-    throw new Error("SendGrid API Key or From Email is missing from environment variables.");
+    throw new Error(
+      "SendGrid API Key or From Email is missing from environment variables.",
+    );
   }
 
   sgMail.setApiKey(process.env.SENDGRID_API_KEY);

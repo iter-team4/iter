@@ -87,7 +87,6 @@ export const verifyEmail = async (req: Request, res: Response) => {
   }
 };
 
-// NEW: Resend Code Endpoint
 export const resendCode = async (req: Request, res: Response) => {
   const { email } = req.body;
 

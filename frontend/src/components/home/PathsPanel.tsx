@@ -7,7 +7,7 @@ interface PathsPanelProps {
 
   routeName: string;
   setRouteName: React.Dispatch<React.SetStateAction<string>>;
-  
+
   setPathPoints: React.Dispatch<React.SetStateAction<[number, number][]>>;
 
   routeGeometry: [number, number][];

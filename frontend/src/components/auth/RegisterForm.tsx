@@ -1,7 +1,14 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { motion } from "motion/react";
-import { ArrowRight, Mail, User, AtSign, CheckCircle2, XCircle } from "lucide-react";
+import {
+  ArrowRight,
+  Mail,
+  User,
+  AtSign,
+  CheckCircle2,
+  XCircle,
+} from "lucide-react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
@@ -42,11 +49,15 @@ function validateRegisterForm(
   if (!name.trim()) errors.name = "Please enter your full name.";
   if (!username.trim()) errors.username = "Please enter a username.";
   if (!email.trim()) errors.email = "Please enter your email address.";
-  else if (!isValidEmail(email)) errors.email = "Please enter a valid email address.";
+  else if (!isValidEmail(email))
+    errors.email = "Please enter a valid email address.";
   if (!password) errors.password = "Please enter a password.";
-  else if (!isPasswordValid) errors.password = "Password doesn't meet all the requirements.";
-  if (!confirmPassword) errors.confirmPassword = "Please confirm your password.";
-  else if (password !== confirmPassword) errors.confirmPassword = "Passwords do not match.";
+  else if (!isPasswordValid)
+    errors.password = "Password doesn't meet all the requirements.";
+  if (!confirmPassword)
+    errors.confirmPassword = "Please confirm your password.";
+  else if (password !== confirmPassword)
+    errors.confirmPassword = "Passwords do not match.";
   return errors;
 }
 
@@ -197,7 +208,9 @@ export function RegisterForm() {
         >
           <CardTitle
             className="text-3xl font-bold"
-            style={{ color: isDark ? brandColors.accent : brandColors.accentText }}
+            style={{
+              color: isDark ? brandColors.accent : brandColors.accentText,
+            }}
           >
             Create Account
           </CardTitle>
@@ -237,7 +250,9 @@ export function RegisterForm() {
                 type="text"
                 placeholder="johndoe123"
                 value={username}
-                onChange={(e) => onFieldChange("username", setUsername, e.target.value)}
+                onChange={(e) =>
+                  onFieldChange("username", setUsername, e.target.value)
+                }
                 className={`pl-10 h-11 ${getErrorClassName(fieldErrors.username)}`}
               />
             </div>
@@ -254,7 +269,9 @@ export function RegisterForm() {
                 inputMode="email"
                 placeholder="you@example.com"
                 value={email}
-                onChange={(e) => onFieldChange("email", setEmail, e.target.value)}
+                onChange={(e) =>
+                  onFieldChange("email", setEmail, e.target.value)
+                }
                 className={`pl-10 h-11 ${getErrorClassName(fieldErrors.email)}`}
               />
             </div>
@@ -278,7 +295,9 @@ export function RegisterForm() {
             <PasswordInput
               id="confirmPassword"
               value={confirmPassword}
-              onChange={(v) => onFieldChange("confirmPassword", setConfirmPassword, v)}
+              onChange={(v) =>
+                onFieldChange("confirmPassword", setConfirmPassword, v)
+              }
               className={getConfirmPasswordClassName(
                 confirmPassword,
                 password,
@@ -289,7 +308,10 @@ export function RegisterForm() {
               <FieldError message={fieldErrors.confirmPassword} />
             ) : (
               passwordsMatch && (
-                <p className="text-xs flex items-center gap-1 mt-1" style={{ color: "#27ae60" }}>
+                <p
+                  className="text-xs flex items-center gap-1 mt-1"
+                  style={{ color: "#27ae60" }}
+                >
                   <CheckCircle2 className="size-3.5" /> Passwords match
                 </p>
               )

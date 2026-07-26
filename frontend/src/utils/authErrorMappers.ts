@@ -98,37 +98,42 @@ export function mapLoginError(code: string, message: string): string {
     message.includes("user does not exist")
   )
     return "No account found with this email. Did you mean to sign up?";
-  if (
-    message.includes("toomanyrequests") ||
-    message.includes("too many")
-  )
+  if (message.includes("toomanyrequests") || message.includes("too many"))
     return "Too many attempts. Please wait a moment and try again.";
   return "Login failed. Please try again.";
 }
 
 export type RegisterField =
-  | "name"
-  | "username"
-  | "email"
-  | "password"
-  | "confirmPassword"
-  | "general";
+  "name" | "username" | "email" | "password" | "confirmPassword" | "general";
 
-export function mapRegisterError(
-  raw: string
-): { field: RegisterField; message: string } {
+export function mapRegisterError(raw: string): {
+  field: RegisterField;
+  message: string;
+} {
   const msg = raw.toLowerCase();
   if (
     msg.includes("usernameexists") ||
     msg.includes("already exists") ||
     msg.includes("email already")
   )
-    return { field: "email", message: "An account with this email already exists." };
-  if (msg.includes("invalidpassword") || msg.includes("password did not conform"))
-    return { field: "password", message: "Password doesn't meet the requirements." };
+    return {
+      field: "email",
+      message: "An account with this email already exists.",
+    };
+  if (
+    msg.includes("invalidpassword") ||
+    msg.includes("password did not conform")
+  )
+    return {
+      field: "password",
+      message: "Password doesn't meet the requirements.",
+    };
   if (msg.includes("invalidparameter") && msg.includes("email"))
     return { field: "email", message: "Please enter a valid email address." };
   if (msg.includes("toomanyrequests") || msg.includes("too many"))
-    return { field: "general", message: "Too many attempts. Please wait a moment and try again." };
+    return {
+      field: "general",
+      message: "Too many attempts. Please wait a moment and try again.",
+    };
   return { field: "general", message: raw };
 }
