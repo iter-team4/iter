@@ -16,10 +16,7 @@ export function AuthLayout() {
     >
       <DarkModeToggle />
       <main className="w-full max-w-6xl flex rounded-3xl overflow-hidden shadow-2xl">
-        <AuthFormPanel
-          isLogin={isLogin}
-          isDark={isDark}
-        >
+        <AuthFormPanel isLogin={isLogin} isDark={isDark}>
           <Outlet />
         </AuthFormPanel>
 

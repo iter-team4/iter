@@ -3,9 +3,6 @@ import mongoose from "mongoose";
 import Route from "../models/Route.js";
 import User from "../models/User.js";
 
-/*
- * POST /api/routes/save
- */
 export const saveRoute = async (req: Request, res: Response) => {
   try {
     const { routeName, distanceMiles, waypoints } = req.body;
@@ -14,16 +11,14 @@ export const saveRoute = async (req: Request, res: Response) => {
       return res.status(400).json({ message: "Invalid route data" });
     }
 
-    const userId = req.user?.sub;
+    const userId = req.user?.id;
     if (!userId) {
       return res.status(401).json({ message: "Unauthorized" });
     }
 
-    // FIND BY MONGODB ID DIRECTLY (No more Cognito!)
     const user = await User.findById(userId);
 
     if (!user) {
-      // THIS WAS THE 404 YOU WERE SEEING!
       return res.status(404).json({ message: "User not found" });
     }
 
@@ -41,12 +36,9 @@ export const saveRoute = async (req: Request, res: Response) => {
   }
 };
 
-/*
- * GET /api/routes/my-routes
- */
 export const loadRoutes = async (req: Request, res: Response) => {
   try {
-    const userId = req.user?.sub;
+    const userId = req.user?.id;
     if (!userId) {
       return res.status(401).json({ message: "Unauthorized" });
     }
@@ -66,12 +58,9 @@ export const loadRoutes = async (req: Request, res: Response) => {
   }
 };
 
-/*
- * GET /api/routes/search?q=query
- */
 export const searchRoutes = async (req: Request, res: Response) => {
   try {
-    const userId = req.user?.sub;
+    const userId = req.user?.id;
     if (!userId) {
       return res.status(401).json({ message: "Unauthorized" });
     }
@@ -89,13 +78,12 @@ export const searchRoutes = async (req: Request, res: Response) => {
 
     // If the query is not empty, add the regex filter
     if (q) {
-      filter.routeName = { $regex: q, $options: "i" }; // 'i' means case-insensitive
+      filter.routeName = { $regex: q, $options: "i" };
     }
 
     const routes = await Route.find(filter).sort({ createdAt: -1 });
     console.log(`✅ Found ${routes.length} routes matching "${q}"`);
 
-    // We return it wrapped in { routes } to match how your getMyRoutes handles data
     return res.status(200).json({ routes });
   } catch (err) {
     console.error("Search Error:", err);
@@ -103,12 +91,9 @@ export const searchRoutes = async (req: Request, res: Response) => {
   }
 };
 
-/*
- * DELETE /api/routes/:id
- */
 export const deleteRoute = async (req: Request, res: Response) => {
   try {
-    const userId = req.user?.sub;
+    const userId = req.user?.id;
     if (!userId) {
       return res.status(401).json({ message: "Unauthorized" });
     }

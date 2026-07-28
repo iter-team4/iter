@@ -87,7 +87,6 @@ export const verifyEmail = async (req: Request, res: Response) => {
   }
 };
 
-// NEW: Resend Code Endpoint
 export const resendCode = async (req: Request, res: Response) => {
   const { email } = req.body;
 
@@ -144,11 +143,20 @@ export const login = async (req: Request, res: Response) => {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
-    const nameParts = (user.name || "").split(" ");
-    const firstName = nameParts[0] || "";
-    const lastName = nameParts.slice(1).join(" ") || "";
+    // Prevent login if the user hasn't verified their email yet
+    if (!user.isVerified) {
+      return res.status(401).json({
+        message: "Invalid credentials or user not confirmed",
+      });
+    }
 
-    const tokenResult = createToken(firstName, lastName, user._id.toString());
+    // Pass real database fields cleanly into the token generator
+    const tokenResult = createToken(
+      user._id.toString(),
+      user.name || "",
+      user.username || "",
+      user.email || "",
+    );
 
     if (tokenResult.error) {
       return res

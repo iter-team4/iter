@@ -1,13 +1,9 @@
 import type { Request, Response } from "express";
 import mongoose from "mongoose";
-
 import Run from "../models/Run.js";
 import Route from "../models/Route.js";
 import User from "../models/User.js";
 
-/*
- * POST /api/runs/save
- */
 export const saveRun = async (req: Request, res: Response) => {
   try {
     const {
@@ -39,15 +35,15 @@ export const saveRun = async (req: Request, res: Response) => {
       });
     }
 
-    if (!req.user?.sub) {
+    // Check for standard JWT 'id' instead of Cognito 'sub'
+    if (!req.user?.id) {
       return res.status(401).json({
         message: "Unauthorized",
       });
     }
 
-    const user = await User.findOne({
-      cognitoSub: req.user.sub,
-    });
+    // Query MongoDB by standard _id instead of cognitoSub
+    const user = await User.findById(req.user.id);
 
     if (!user) {
       return res.status(404).json({
@@ -89,20 +85,17 @@ export const saveRun = async (req: Request, res: Response) => {
   }
 };
 
-/*
- * GET /api/runs/my-runs
- */
 export const loadRuns = async (req: Request, res: Response) => {
   try {
-    if (!req.user?.sub) {
+    // Check for standard JWT 'id' instead of Cognito 'sub'
+    if (!req.user?.id) {
       return res.status(401).json({
         message: "Unauthorized",
       });
     }
 
-    const user = await User.findOne({
-      cognitoSub: req.user.sub,
-    });
+    // Query MongoDB by standard _id instead of cognitoSub
+    const user = await User.findById(req.user.id);
 
     if (!user) {
       return res.status(404).json({

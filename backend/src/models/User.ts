@@ -4,14 +4,13 @@ export interface IUser extends mongoose.Document {
   email: string;
   username: string;
   name: string;
-  password?: string; // Required for local auth
+  password?: string;
   isVerified?: boolean;
   verificationCode?: string;
   createdAt: Date;
 }
 
 const userSchema = new mongoose.Schema<IUser>({
-  // cognitoSub has been completely removed!
   email: { type: String, required: true, unique: true },
   username: { type: String, required: true },
   name: { type: String, required: true },

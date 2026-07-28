@@ -20,7 +20,6 @@ export default function HomeSidebar({
     >
       {activePanel && (
         <div className="flex h-full w-80 flex-col">
-
           {/* Header */}
           <div className="flex items-center justify-between border-b border-sidebar-border px-5 py-4">
             <h2 className="text-base font-semibold tracking-wide">
@@ -38,12 +37,8 @@ export default function HomeSidebar({
             </button>
           </div>
 
-
           {/* Content */}
-          <div className="flex-1 overflow-y-auto p-5">
-            {children}
-          </div>
-
+          <div className="flex-1 overflow-y-auto p-5">{children}</div>
         </div>
       )}
     </div>

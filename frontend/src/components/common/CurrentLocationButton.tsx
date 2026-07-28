@@ -22,6 +22,7 @@ export default function CurrentLocationButton({
     root.render(
       <button
         onClick={() => map.flyTo(location, 16)}
+        aria-label="Go to current location"
         className="
           rounded-xl
           bg-background

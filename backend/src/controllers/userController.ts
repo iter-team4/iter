@@ -3,8 +3,7 @@ import User from "../models/User.js";
 
 export const getMe = async (req: Request, res: Response) => {
   try {
-    // With local JWTs, req.user.sub is now the MongoDB _id (no more Cognito!)
-    const userId = req.user?.sub;
+    const userId = req.user?.id;
 
     if (!userId) {
       return res.status(401).json({ message: "Unauthorized" });

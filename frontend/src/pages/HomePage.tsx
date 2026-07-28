@@ -45,23 +45,23 @@ export function HomePage() {
   useAuthGuard();
 
   const {
-  savedRoutes,
-  routesLoading,
+    savedRoutes,
+    routesLoading,
 
-  searchQuery,
-  setSearchQuery,
-  searchResults,
-  searchLoading,
-  search,
+    searchQuery,
+    setSearchQuery,
+    searchResults,
+    searchLoading,
+    search,
 
-  selectedSavedRoute,
-  setSelectedSavedRoute,
+    selectedSavedRoute,
+    setSelectedSavedRoute,
 
-  loadRoutes,
+    loadRoutes,
 
-  saveRoute: saveRouteApi,
-  deleteRoute: deleteRouteApi,
-} = useRoutes();
+    saveRoute: saveRouteApi,
+    deleteRoute: deleteRouteApi,
+  } = useRoutes();
 
   const [userLocation, setUserLocation] =
     useState<[number, number]>(DEFAULT_LOCATION);
@@ -126,7 +126,7 @@ export function HomePage() {
     if (!user) return;
 
     setUsername(user.username);
-    setMemberSince(user.memberSince); 
+    setMemberSince(user.memberSince);
   }, []);
 
   const handleSignOut = () => {
@@ -161,6 +161,10 @@ export function HomePage() {
 
     calculateRoute();
   }, [pathPoints]);
+
+  const undoPoint = () => {
+    setPathPoints((prev) => prev.slice(0, -1));
+  };
 
   // Save route to backend
   const saveRoute = async (routeData: {
@@ -236,6 +240,8 @@ export function HomePage() {
               setRouteName={setRouteName}
 
               setPathPoints={setPathPoints}
+
+              undoPoint={undoPoint}
 
               routeGeometry={routeGeometry}
               distance={distance}

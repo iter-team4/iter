@@ -7,9 +7,7 @@ import type { Run } from "../../types/run";
 
 interface CalendarPanelProps {
   selectedDate: Date | undefined;
-  setSelectedDate: React.Dispatch<
-    React.SetStateAction<Date | undefined>
-  >;
+  setSelectedDate: React.Dispatch<React.SetStateAction<Date | undefined>>;
 
   myRuns: Run[];
   selectedDayRuns: Run[];
@@ -17,9 +15,7 @@ interface CalendarPanelProps {
 
   runsByDay: Record<string, Run[]>;
 
-  setSelectedRoute: React.Dispatch<
-    React.SetStateAction<[number, number][]>
-  >;
+  setSelectedRoute: React.Dispatch<React.SetStateAction<[number, number][]>>;
 }
 
 export default function CalendarPanel({
@@ -35,9 +31,7 @@ export default function CalendarPanel({
     <div className="space-y-5">
       <div>
         <h3 className="text-lg font-semibold">My Runs</h3>
-        <p className="text-sm text-muted-foreground">
-          Activity history
-        </p>
+        <p className="text-sm text-muted-foreground">Activity history</p>
       </div>
 
       {runsLoading ? (
@@ -56,16 +50,15 @@ export default function CalendarPanel({
               hasRun: (date) => Boolean(runsByDay[dateKey(date)]),
             }}
             modifiersClassNames={{
-              hasRun:
-                "border border-green-500 bg-green-500/20 text-green-400",
+              hasRun: "border border-green-500 bg-green-500/20 text-green-400",
             }}
             className="rounded-xl border border-border bg-muted/20"
           />
 
           {myRuns.length === 0 && (
             <div className="rounded-xl border border-dashed border-border p-4 text-sm text-muted-foreground">
-              No runs yet. Complete a run in the iter mobile app and it'll
-              show up here.
+              No runs yet. Complete a run in the iter mobile app and it'll show
+              up here.
             </div>
           )}
 
@@ -90,17 +83,14 @@ export default function CalendarPanel({
                       key={run._id}
                       onClick={() => {
                         const points = run.waypoints.map(
-                          ([lng, lat]) =>
-                            [lat, lng] as [number, number]
+                          ([lng, lat]) => [lat, lng] as [number, number]
                         );
 
                         setSelectedRoute(points);
                       }}
                       className="w-full rounded-lg border border-border bg-background/40 p-3 text-left transition hover:bg-accent"
                     >
-                      <p className="font-semibold">
-                        {run.pathName}
-                      </p>
+                      <p className="font-semibold">{run.pathName}</p>
 
                       <p className="mt-1 text-sm text-muted-foreground">
                         {run.distanceMiles.toFixed(2)} mi ·{" "}

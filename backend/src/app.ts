@@ -7,18 +7,17 @@ import runRoutes from "./routes/runRoutes.js";
 
 const app = express();
 
-// 1. BULLETPROOF FIX: Automatically remove double slashes from incoming URLs!
-// This fixes the issue where the frontend accidentally sends http://localhost:3000//api/...
 app.use((req, res, next) => {
   req.url = req.url.replace(/\/{2,}/g, "/");
   next();
 });
 
-// 2. CORS configuration
 app.use(
   cors({
     origin: true,
     credentials: true,
+    // Expose the Authorization header to the frontend
+    //exposedHeaders: ["Authorization"],
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: [
       "Content-Type",
@@ -38,7 +37,6 @@ app.use("/api/user", userRoutes);
 app.use("/api/runs", runRoutes);
 console.log("✅ All Express Routes Loaded");
 
-// 4. Debug 404 Handler
 app.use((req, res, next) => {
   console.log(`❌ 404 Not Found: ${req.method} ${req.path}`);
   res.status(404).json({ message: "Route not found" });

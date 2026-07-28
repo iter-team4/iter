@@ -1,4 +1,5 @@
-import { LogOut } from "lucide-react";
+import { useRef, useState } from "react";
+import { LogOut, Camera } from "lucide-react";
 import type { Run } from "../../types/run";
 
 interface Props {
@@ -16,19 +17,72 @@ export default function ProfilePanel({
   runsLoading,
   handleSignOut,
 }: Props) {
+  const storageKey = `profile_picture_${username}`;
+  const [profilePic, setProfilePic] = useState<string | null>(() =>
+    localStorage.getItem(storageKey)
+  );
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = reader.result as string;
+      setProfilePic(dataUrl);
+      localStorage.setItem(storageKey, dataUrl);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleRemovePicture = () => {
+    setProfilePic(null);
+    localStorage.removeItem(storageKey);
+  };
+
   return (
     <div className="space-y-5">
       {/* Avatar + identity */}
       <div className="flex flex-col items-center gap-3 pt-4">
-        <div
-          className="flex h-20 w-20 items-center justify-center rounded-full text-3xl font-semibold"
-          style={{
-            background: "var(--muted)",
-            border: "3px solid #C4A35A",
-            color: "#C4A35A",
-          }}
-        >
-          {username.charAt(0).toUpperCase()}
+        {/* Avatar with camera overlay */}
+        <div className="relative">
+          <div
+            className="flex h-20 w-20 items-center justify-center rounded-full text-3xl font-semibold overflow-hidden"
+            style={{
+              background: profilePic ? "transparent" : "var(--muted)",
+              border: "3px solid #C4A35A",
+              color: "#C4A35A",
+            }}
+          >
+            {profilePic ? (
+              <img
+                src={profilePic}
+                alt="Profile"
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              username.charAt(0).toUpperCase()
+            )}
+          </div>
+
+          {/* Camera button */}
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            aria-label="Change profile picture"
+            className="absolute bottom-0 right-0 flex h-6 w-6 items-center justify-center rounded-full border-2 border-background transition hover:opacity-80"
+            style={{ background: "#C4A35A" }}
+          >
+            <Camera size={12} color="white" />
+          </button>
+
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handleImageChange}
+          />
         </div>
 
         <div className="text-center">
@@ -40,6 +94,16 @@ export default function ProfilePanel({
             </p>
           )}
         </div>
+
+        {/* Remove picture link — only shown when a custom pic is set */}
+        {profilePic && (
+          <button
+            onClick={handleRemovePicture}
+            className="text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground transition"
+          >
+            Remove picture
+          </button>
+        )}
 
         <div
           className="flex items-center gap-1.5 rounded-lg px-4 py-1.5 text-sm font-semibold"
@@ -88,9 +152,7 @@ export default function ProfilePanel({
                   .toFixed(1)}
               </span>
 
-              <span className="text-[11px] text-muted-foreground">
-                mi
-              </span>
+              <span className="text-[11px] text-muted-foreground">mi</span>
             </div>
 
             <div className="flex flex-col items-center gap-1 rounded-2xl border border-border bg-muted/20 px-2 py-3">
@@ -102,9 +164,7 @@ export default function ProfilePanel({
                 {myRuns.length}
               </span>
 
-              <span className="text-[11px] text-muted-foreground">
-                runs
-              </span>
+              <span className="text-[11px] text-muted-foreground">runs</span>
             </div>
 
             <div className="flex flex-col items-center gap-1 rounded-2xl border border-border bg-muted/20 px-2 py-3">
@@ -114,13 +174,13 @@ export default function ProfilePanel({
 
               <span className="text-xl font-bold leading-tight">
                 {myRuns.length > 0
-                  ? Math.max(...myRuns.map((run) => run.distanceMiles)).toFixed(1)
+                  ? Math.max(...myRuns.map((run) => run.distanceMiles)).toFixed(
+                      1
+                    )
                   : "0.0"}
               </span>
 
-              <span className="text-[11px] text-muted-foreground">
-                mi
-              </span>
+              <span className="text-[11px] text-muted-foreground">mi</span>
             </div>
           </div>
         )}
